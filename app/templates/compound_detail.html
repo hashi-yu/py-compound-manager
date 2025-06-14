@@ -25,6 +25,16 @@
         </div>
         
         <table class="table table-borderless">
+            {% if compound.project %}
+            <tr>
+                <td><strong>プロジェクト:</strong></td>
+                <td>
+                    <a href="{{ url_for('main.index', project_id=compound.project.id) }}" class="text-decoration-none">
+                        📁 {{ compound.project.name }}
+                    </a>
+                </td>
+            </tr>
+            {% endif %}
             {% if compound.molecular_formula %}
             <tr>
                 <td><strong>分子式:</strong></td>

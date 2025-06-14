@@ -23,6 +23,16 @@
                 <input type="number" step="0.01" class="form-control" id="molecular_weight" name="molecular_weight" placeholder="例: 78.11">
             </div>
             
+            <div class="mb-3">
+                <label for="project_id" class="form-label">プロジェクト</label>
+                <select class="form-select" id="project_id" name="project_id">
+                    <option value="">プロジェクトを選択（任意）</option>
+                    {% for project in projects %}
+                    <option value="{{ project.id }}">{{ project.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            
         </div>
         
         <div class="col-md-6">

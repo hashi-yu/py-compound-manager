@@ -2,8 +2,25 @@
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>化合物一覧</h1>
+    <h1>化合物一覧{% if current_project %} - {{ current_project.name }}{% endif %}</h1>
     <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary">新しい化合物を追加</a>
+</div>
+
+<div class="mb-4">
+    <div class="d-flex gap-2 align-items-center">
+        <label for="projectFilter" class="form-label mb-0">プロジェクト:</label>
+        <select id="projectFilter" class="form-select" style="width: auto;" onchange="filterByProject()">
+            <option value="">すべて</option>
+            {% for project in projects %}
+            <option value="{{ project.id }}" {% if current_project and current_project.id == project.id %}selected{% endif %}>
+                {{ project.name }}
+            </option>
+            {% endfor %}
+        </select>
+        {% if current_project %}
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary btn-sm">フィルタ解除</a>
+        {% endif %}
+    </div>
 </div>
 
 {% if compounds %}
@@ -21,6 +38,9 @@
             {% endif %}
             <div class="card-body">
                 <h5 class="card-title">{{ compound.name }}</h5>
+                {% if compound.project %}
+                <p class="text-primary mb-1"><small>📁 {{ compound.project.name }}</small></p>
+                {% endif %}
                 {% if compound.molecular_formula %}
                 <p class="text-muted mb-1">分子式: {{ compound.molecular_formula }}</p>
                 {% endif %}
@@ -40,4 +60,16 @@
     <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary mt-3">最初の化合物を追加</a>
 </div>
 {% endif %}
+
+<script>
+function filterByProject() {
+    const select = document.getElementById('projectFilter');
+    const projectId = select.value;
+    if (projectId) {
+        window.location.href = '{{ url_for("main.index") }}?project_id=' + projectId;
+    } else {
+        window.location.href = '{{ url_for("main.index") }}';
+    }
+}
+</script>
 {% endblock %}

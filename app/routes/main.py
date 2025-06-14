@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, current_app
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Compound, SpectralData
+from app.models import Compound, SpectralData, Project
 import os
 import uuid
 
@@ -14,8 +14,16 @@ def allowed_file(filename):
 
 @main_bp.route('/')
 def index():
-    compounds = Compound.query.order_by(Compound.updated_date.desc()).all()
-    return render_template('index.html', compounds=compounds)
+    project_id = request.args.get('project_id', type=int)
+    if project_id:
+        compounds = Compound.query.filter_by(project_id=project_id).order_by(Compound.updated_date.desc()).all()
+        current_project = Project.query.get(project_id)
+    else:
+        compounds = Compound.query.order_by(Compound.updated_date.desc()).all()
+        current_project = None
+    
+    projects = Project.query.order_by(Project.name).all()
+    return render_template('index.html', compounds=compounds, projects=projects, current_project=current_project)
 
 @main_bp.route('/compound/<int:compound_id>')
 def compound_detail(compound_id):
@@ -29,6 +37,7 @@ def add_compound():
         molecular_formula = request.form.get('molecular_formula', '').strip()
         molecular_weight_str = request.form.get('molecular_weight', '').strip()
         notes = request.form.get('notes', '')
+        project_id = request.form.get('project_id') or None
         
         # 分子量の処理：空文字列またはNoneの場合はNoneを設定
         molecular_weight = None
@@ -46,6 +55,7 @@ def add_compound():
             name=name,
             molecular_formula=molecular_formula,
             molecular_weight=molecular_weight,
+            project_id=project_id,
             notes=notes
         )
         
@@ -65,7 +75,8 @@ def add_compound():
         flash('化合物が正常に追加されました。', 'success')
         return redirect(url_for('main.compound_detail', compound_id=compound.id))
     
-    return render_template('add_compound.html')
+    projects = Project.query.order_by(Project.name).all()
+    return render_template('add_compound.html', projects=projects)
 
 @main_bp.route('/upload_data/<int:compound_id>', methods=['POST'])
 def upload_spectral_data(compound_id):
@@ -126,13 +137,12 @@ def edit_compound(compound_id):
     compound = Compound.query.get_or_404(compound_id)
     
     if request.method == 'POST':
-        print(f"POST request received for compound {compound_id}")
-        print(f"Form data: {dict(request.form)}")
         compound.name = request.form['name']
         
         molecular_formula = request.form.get('molecular_formula', '').strip()
         molecular_weight_str = request.form.get('molecular_weight', '').strip()
         compound.notes = request.form.get('notes', '')
+        compound.project_id = request.form.get('project_id') or None
         
         # 分子量の処理
         compound.molecular_weight = None
@@ -166,7 +176,8 @@ def edit_compound(compound_id):
         flash('化合物情報が更新されました。', 'success')
         return redirect(url_for('main.compound_detail', compound_id=compound_id))
     
-    return render_template('edit_compound.html', compound=compound)
+    projects = Project.query.order_by(Project.name).all()
+    return render_template('edit_compound.html', compound=compound, projects=projects)
 
 @main_bp.route('/delete_structure/<int:compound_id>', methods=['POST'])
 def delete_structure(compound_id):
@@ -223,3 +234,56 @@ def delete_compound(compound_id):
     
     flash(f'化合物「{compound_name}」が削除されました。', 'success')
     return redirect(url_for('main.index'))
+
+@main_bp.route('/projects')
+def projects():
+    projects = Project.query.order_by(Project.updated_date.desc()).all()
+    return render_template('projects.html', projects=projects)
+
+@main_bp.route('/add_project', methods=['GET', 'POST'])
+def add_project():
+    if request.method == 'POST':
+        name = request.form['name']
+        description = request.form.get('description', '')
+        
+        project = Project(
+            name=name,
+            description=description
+        )
+        
+        db.session.add(project)
+        db.session.commit()
+        flash('プロジェクトが正常に追加されました。', 'success')
+        return redirect(url_for('main.projects'))
+    
+    return render_template('add_project.html')
+
+@main_bp.route('/edit_project/<int:project_id>', methods=['GET', 'POST'])
+def edit_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    
+    if request.method == 'POST':
+        project.name = request.form['name']
+        project.description = request.form.get('description', '')
+        
+        db.session.commit()
+        flash('プロジェクトが更新されました。', 'success')
+        return redirect(url_for('main.projects'))
+    
+    return render_template('edit_project.html', project=project)
+
+@main_bp.route('/delete_project/<int:project_id>', methods=['POST'])
+def delete_project(project_id):
+    project = Project.query.get_or_404(project_id)
+    project_name = project.name
+    
+    # プロジェクトに属する化合物のproject_idをNullに設定
+    compounds = Compound.query.filter_by(project_id=project_id).all()
+    for compound in compounds:
+        compound.project_id = None
+    
+    db.session.delete(project)
+    db.session.commit()
+    
+    flash(f'プロジェクト「{project_name}」が削除されました。関連する化合物は未分類になりました。', 'success')
+    return redirect(url_for('main.projects'))

@@ -1,5 +1,5 @@
 from app import create_app, db
-from app.models import Compound, SpectralData
+from app.models import Compound, SpectralData, Project
 
 app = create_app()
 

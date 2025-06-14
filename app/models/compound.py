@@ -8,6 +8,7 @@ class Compound(db.Model):
     molecular_weight = db.Column(db.Float, nullable=True)
     structure_image = db.Column(db.String(200))
     notes = db.Column(db.Text)
+    project_id = db.Column(db.Integer, db.ForeignKey('project.id'), nullable=True)
     created_date = db.Column(db.DateTime, default=datetime.utcnow)
     updated_date = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
