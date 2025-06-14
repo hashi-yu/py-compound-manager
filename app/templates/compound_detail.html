@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+
+{% block title %}{{ compound.name }} - 化合物データ管理システム{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-4">
+        {% if compound.structure_image %}
+        <img src="{{ url_for('main.structure_image', filename=compound.structure_image.split('/')[-1]) }}" 
+             class="img-fluid border rounded" alt="構造式">
+        {% else %}
+        <div class="border rounded bg-light d-flex align-items-center justify-content-center" style="height: 300px;">
+            <span class="text-muted">構造式なし</span>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-8">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>{{ compound.name }}</h1>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('main.edit_compound', compound_id=compound.id) }}" class="btn btn-outline-primary">編集</a>
+                <button type="button" class="btn btn-outline-danger" onclick="deleteCompound({{ compound.id }}, '{{ compound.name }}')">削除</button>
+            </div>
+        </div>
+        
+        <table class="table table-borderless">
+            {% if compound.molecular_formula %}
+            <tr>
+                <td><strong>分子式:</strong></td>
+                <td>{{ compound.molecular_formula }}</td>
+            </tr>
+            {% endif %}
+            {% if compound.molecular_weight %}
+            <tr>
+                <td><strong>分子量:</strong></td>
+                <td>{{ compound.molecular_weight }}</td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td><strong>作成日:</strong></td>
+                <td>{{ compound.created_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            <tr>
+                <td><strong>更新日:</strong></td>
+                <td>{{ compound.updated_date.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+        </table>
+        
+        {% if compound.notes %}
+        <div class="mt-3">
+            <h5>メモ</h5>
+            <p>{{ compound.notes }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<hr class="my-4">
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h3>スペクトルデータ</h3>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#uploadModal">データアップロード</button>
+</div>
+
+{% if compound.spectral_data %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>データ種類</th>
+                <th>ファイル名</th>
+                <th>アップロード日</th>
+                <th>操作</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in compound.spectral_data %}
+            <tr>
+                <td>{{ data.data_type }}</td>
+                <td>{{ data.original_filename }}</td>
+                <td>{{ data.upload_date.strftime('%Y-%m-%d') }}</td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="{{ url_for('main.download_file', data_id=data.id) }}" class="btn btn-sm btn-outline-primary">ダウンロード</a>
+                        <form method="POST" action="{{ url_for('main.delete_spectral_data', data_id=data.id) }}" class="d-inline">
+                            <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                    onclick="return confirm('このスペクトルデータを削除しますか？')">削除</button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center mt-4">
+    <p class="text-muted">スペクトルデータがありません</p>
+</div>
+{% endif %}
+
+<!-- アップロードモーダル -->
+<div class="modal fade" id="uploadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form method="POST" action="{{ url_for('main.upload_spectral_data', compound_id=compound.id) }}" enctype="multipart/form-data">
+                <div class="modal-header">
+                    <h5 class="modal-title">スペクトルデータアップロード</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="data_type" class="form-label">データ種類 *</label>
+                        <select class="form-select" id="data_type" name="data_type" required>
+                            <option value="">選択してください</option>
+                            <option value="1H NMR">1H NMR</option>
+                            <option value="13C NMR">13C NMR</option>
+                            <option value="IR">IR</option>
+                            <option value="MS">MS</option>
+                            <option value="HPLC">HPLC</option>
+                            <option value="その他">その他</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="data_file" class="form-label">データファイル *</label>
+                        <input type="file" class="form-control" id="data_file" name="data_file" required>
+                    </div>
+                    
+                    
+                    <div class="mb-3">
+                        <label for="data_notes" class="form-label">メモ</label>
+                        <textarea class="form-control" id="data_notes" name="data_notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">キャンセル</button>
+                    <button type="submit" class="btn btn-primary">アップロード</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="mt-4">
+    <a href="{{ url_for('main.index') }}" class="btn btn-secondary">一覧に戻る</a>
+</div>
+
+<script>
+function deleteCompound(compoundId, compoundName) {
+    if (confirm(`化合物「${compoundName}」を削除しますか？\n\n※この操作は取り消せません。\n※関連するすべてのスペクトルデータも削除されます。`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/delete_compound/' + compoundId;
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

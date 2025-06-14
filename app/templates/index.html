@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>化合物一覧</h1>
+    <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary">新しい化合物を追加</a>
+</div>
+
+{% if compounds %}
+<div class="row">
+    {% for compound in compounds %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+            {% if compound.structure_image %}
+            <img src="{{ url_for('main.structure_image', filename=compound.structure_image.split('/')[-1]) }}" 
+                 class="card-img-top compound-structure" alt="構造式">
+            {% else %}
+            <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-muted">構造式なし</span>
+            </div>
+            {% endif %}
+            <div class="card-body">
+                <h5 class="card-title">{{ compound.name }}</h5>
+                {% if compound.molecular_formula %}
+                <p class="text-muted mb-1">分子式: {{ compound.molecular_formula }}</p>
+                {% endif %}
+                {% if compound.molecular_weight %}
+                <p class="text-muted mb-1">分子量: {{ compound.molecular_weight }}</p>
+                {% endif %}
+                <p class="text-muted mb-2">スペクトルデータ: {{ compound.spectral_data|length }}件</p>
+                <a href="{{ url_for('main.compound_detail', compound_id=compound.id) }}" class="btn btn-outline-primary">詳細表示</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center mt-5">
+    <h4 class="text-muted">化合物が登録されていません</h4>
+    <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary mt-3">最初の化合物を追加</a>
+</div>
+{% endif %}
+{% endblock %}
