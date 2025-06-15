@@ -9,13 +9,10 @@
 """
 
 import re
-import io
-import base64
 import logging
-from typing import Dict, Optional, Tuple, Any
+from typing import Dict, Optional, Any
 from PIL import Image
 import requests
-import json
 
 # OpenCV関連（条件付きインポート）
 try:
@@ -343,40 +340,21 @@ class ChemicalImageAnalyzer:
         return result
 
     def validate_molecular_formula(self, formula: str) -> bool:
-        """分子式の妥当性検証"""
-        if not formula:
+        """分子式の妥当性検証（molecular_calculatorを使用）"""
+        try:
+            from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
+            calculator = HighPrecisionMolecularCalculator()
+            is_valid, _ = calculator.validate_molecular_formula(formula)
+            return is_valid
+        except Exception:
             return False
-        
-        # 基本的な分子式パターンの検証
-        pattern = r'^[A-Z][a-z]?\d*(?:[A-Z][a-z]?\d*)*$'
-        return bool(re.match(pattern, formula))
 
     def calculate_molecular_weight_from_formula(self, formula: str) -> Optional[float]:
-        """分子式から分子量を計算"""
-        if not self.validate_molecular_formula(formula):
-            return None
-        
-        # 原子量テーブル（主要な元素のみ）
-        atomic_weights = {
-            'H': 1.008, 'C': 12.011, 'N': 14.007, 'O': 15.999,
-            'F': 18.998, 'P': 30.974, 'S': 32.066, 'Cl': 35.453,
-            'Br': 79.904, 'I': 126.904
-        }
-        
+        """分子式から分子量を計算（molecular_calculatorを使用）"""
         try:
-            # 分子式をパースして原子数を計算
-            pattern = r'([A-Z][a-z]?)(\d*)'
-            matches = re.findall(pattern, formula)
-            
-            total_weight = 0.0
-            for element, count in matches:
-                if element in atomic_weights:
-                    atom_count = int(count) if count else 1
-                    total_weight += atomic_weights[element] * atom_count
-                else:
-                    return None  # 未知の元素
-            
-            return round(total_weight, 2)
-            
+            from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
+            calculator = HighPrecisionMolecularCalculator()
+            result = calculator.calculate_molecular_weight(formula)
+            return result.molecular_weight
         except Exception:
             return None

@@ -2,11 +2,9 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Compound, SpectralData, Project
-from app.utils.image_analyzer import ChemicalImageAnalyzer
 from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
 import os
 import uuid
-import tempfile
 import logging
 
 main_bp = Blueprint('main', __name__)
@@ -299,64 +297,10 @@ def delete_project(project_id):
 @main_bp.route('/api/analyze-image', methods=['POST'])
 def analyze_image_api():
     """画像解析APIエンドポイント（無効化）"""
-    # 画像解析機能は一時的に無効化されています
     return jsonify({
         'success': False,
         'error': '画像解析機能は現在無効化されています'
     }), 503
-    
-    # 以下は保持されているコードです
-    """
-    try:
-        # ファイルの存在確認
-        if 'image' not in request.files:
-            return jsonify({
-                'success': False,
-                'error': '画像ファイルが送信されていません'
-            }), 400
-        
-        file = request.files['image']
-        if file.filename == '':
-            return jsonify({
-                'success': False,
-                'error': 'ファイルが選択されていません'
-            }), 400
-        
-        # ファイル形式チェック
-        if not allowed_file(file.filename):
-            return jsonify({
-                'success': False,
-                'error': 'サポートされていないファイル形式です'
-            }), 400
-        
-        # 一時ファイルに保存
-        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as temp_file:
-            file.save(temp_file.name)
-            temp_path = temp_file.name
-        
-        try:
-            # 画像解析実行
-            analyzer = ChemicalImageAnalyzer()
-            result = analyzer.analyze_image(temp_path)
-            
-            # 一時ファイル削除
-            os.unlink(temp_path)
-            
-            return jsonify(result)
-            
-        except Exception as e:
-            # 一時ファイル削除（エラー時）
-            if os.path.exists(temp_path):
-                os.unlink(temp_path)
-            raise e
-            
-    except Exception as e:
-        logging.error(f"Image analysis API error: {str(e)}")
-        return jsonify({
-            'success': False,
-            'error': f'解析処理でエラーが発生しました: {str(e)}'
-        }), 500
-    """
 
 @main_bp.route('/api/calculate-molecular-weight', methods=['POST'])
 def calculate_molecular_weight_api():
