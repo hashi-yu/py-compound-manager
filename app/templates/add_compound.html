@@ -3,55 +3,606 @@
 {% block title %}化合物追加 - 化合物データ管理システム{% endblock %}
 
 {% block content %}
-<h1>新しい化合物の追加</h1>
+<!-- ページヘッダー -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <span class="text-gradient">新しい化合物を追加</span>
+            </h1>
+            <p class="page-subtitle">化合物の基本情報を入力してデータベースに登録します</p>
+        </div>
+        <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 6L8 12.5 4.5 6h7z"/>
+            </svg>
+            戻る
+        </a>
+    </div>
+</div>
 
-<form method="POST" enctype="multipart/form-data">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="name" class="form-label">化合物名 *</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+<!-- メインフォーム -->
+<div class="card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-4">
+                <!-- 左側カラム: 基本情報 -->
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-3 d-flex align-items-center">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                            </svg>
+                            基本情報
+                        </h5>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M12.17 9.53c2.307-2.592 3.278-4.684 3.641-6.218.21-.887.214-1.58.16-2.065a3.578 3.578 0 0 0-.108-.563 2.22 2.22 0 0 0-.078-.23V.453c0-.059.001-.098.001-.142.5-.655.934-.98.934-.98s-.301.621-.809 1.332c-.138.193-.264.377-.376.544-.16.242-.301.474-.427.694a12.797 12.797 0 0 0-.756 1.508c-.17.409-.492.804-1.158 1.392-.824.73-1.682 1.268-2.572 1.61-.875.334-1.777.521-2.684.668-1.795.292-3.6.346-5.39.206-.397-.031-.8-.074-1.202-.123a29.68 29.68 0 0 1-1.21-.17C.655 7.82.466 7.732.466 7.732s.319.041.857.095c.564.056 1.334.118 2.226.181.938.067 2.017.13 3.132.179 1.095.048 2.226.076 3.363.076.567 0 1.135-.009 1.701-.027z"/>
+                            </svg>
+                            化合物名 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="化合物の名前を入力してください">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="molecular_formula" class="form-label">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                    <path d="M4 11.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-3-4a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zm2-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/>
+                                </svg>
+                                分子式
+                            </label>
+                            <input type="text" class="form-control" id="molecular_formula" name="molecular_formula" 
+                                   placeholder="例: C6H6">
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="molecular_weight" class="form-label">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                    <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                                </svg>
+                                分子量
+                            </label>
+                            <input type="number" step="0.01" class="form-control" id="molecular_weight" 
+                                   name="molecular_weight" placeholder="例: 78.11">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="project_id" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13A1.5 1.5 0 0 0 16 14.5v-13A1.5 1.5 0 0 0 14.5 0h-13zM1 1.5A.5.5 0 0 1 1.5 1h13a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-13z"/>
+                            </svg>
+                            プロジェクト
+                        </label>
+                        <select class="form-select" id="project_id" name="project_id">
+                            <option value="">プロジェクトを選択（任意）</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}">{{ project.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                            プロジェクトに分類しない場合は「なし」のまま
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右側カラム: 画像とメモ -->
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-3 d-flex align-items-center">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093L6.52 9.773l-2.292-2.292a.5.5 0 0 0-.63-.062L1.002 9v-6a1 1 0 0 1 1-1h12z"/>
+                            </svg>
+                            画像とメモ
+                        </h5>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="structure_image" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                            </svg>
+                            構造式画像
+                        </label>
+                        <input type="file" class="form-control" id="structure_image" name="structure_image" accept="image/*" onchange="handleImageUpload(this)">
+                        
+                        <!-- 画像プレビューエリア -->
+                        <div id="imagePreviewArea" class="mt-3" style="display: none;">
+                            <div class="border rounded p-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-muted">プレビュー</span>
+                                    <!-- 自動解析機能は一時的に無効化 -->
+                                    <!--
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="analyzeImageBtn" onclick="analyzeImage()">
+                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5z"/>
+                                        </svg>
+                                        自動解析
+                                    </button>
+                                    -->
+                                </div>
+                                <img id="imagePreview" src="#" alt="プレビュー" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        </div>
+                        
+                        <!-- 解析結果エリア（無効化） -->
+                        <!--
+                        <div id="analysisResultArea" class="mt-3" style="display: none;">
+                            <div class="alert alert-info">
+                                <div class="d-flex align-items-center mb-2">
+                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                                    </svg>
+                                    <strong>解析結果</strong>
+                                </div>
+                                <div id="analysisResult"></div>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-success" id="applyResultBtn" onclick="applyAnalysisResult()" style="display: none;">
+                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                                        </svg>
+                                        結果を適用
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        -->
+                        
+                        <div class="form-text">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                            PNG, JPG, JPEG, GIF形式をサポート（最大10MB）
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+                            </svg>
+                            メモ・備考
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="5" 
+                                  placeholder="化合物に関するメモや備考を記入してください&#10;・合成方法&#10;・保管条件&#10;・特徴的な性質など"></textarea>
+                    </div>
+                </div>
             </div>
             
-            <div class="mb-3">
-                <label for="molecular_formula" class="form-label">分子式</label>
-                <input type="text" class="form-control" id="molecular_formula" name="molecular_formula" placeholder="例: C6H6">
+            <!-- 送信ボタンエリア -->
+            <div class="d-flex gap-3 pt-4 border-top">
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                    化合物を追加
+                </button>
+                <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                    </svg>
+                    キャンセル
+                </a>
             </div>
-            
-            <div class="mb-3">
-                <label for="molecular_weight" class="form-label">分子量</label>
-                <input type="number" step="0.01" class="form-control" id="molecular_weight" name="molecular_weight" placeholder="例: 78.11">
-            </div>
-            
-            <div class="mb-3">
-                <label for="project_id" class="form-label">プロジェクト</label>
-                <select class="form-select" id="project_id" name="project_id">
-                    <option value="">プロジェクトを選択（任意）</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}">{{ project.name }}</option>
-                    {% endfor %}
-                </select>
-            </div>
-            
-        </div>
+        </form>
+    </div>
+</div>
+
+<script>
+// グローバル変数
+let analysisResult = null;
+let uploadedFile = null;
+
+// 画像アップロード処理
+function handleImageUpload(input) {
+    const file = input.files[0];
+    if (file) {
+        uploadedFile = file;
         
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="structure_image" class="form-label">構造式画像</label>
-                <input type="file" class="form-control" id="structure_image" name="structure_image" accept="image/*">
-                <div class="form-text">PNG, JPG, JPEG, GIF形式をサポート</div>
-            </div>
+        // ファイルサイズチェック（10MB）
+        if (file.size > 10 * 1024 * 1024) {
+            alert('ファイルサイズが10MBを超えています。');
+            input.value = '';
+            return;
+        }
+        
+        // 画像プレビュー表示
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const previewArea = document.getElementById('imagePreviewArea');
             
-            <div class="mb-3">
-                <label for="notes" class="form-label">メモ</label>
-                <textarea class="form-control" id="notes" name="notes" rows="4" placeholder="化合物に関するメモ"></textarea>
-            </div>
-        </div>
-    </div>
+            preview.src = e.target.result;
+            previewArea.style.display = 'block';
+            
+            // 解析結果エリアを非表示
+            document.getElementById('analysisResultArea').style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// 画像解析実行（無効化）
+async function analyzeImage() {
+    // 画像解析機能は一時的に無効化されています
+    console.log('画像解析機能は現在無効化されています');
+    return;
     
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">化合物を追加</button>
-        <a href="{{ url_for('main.index') }}" class="btn btn-secondary">キャンセル</a>
-    </div>
-</form>
+    /* 以下は保持されているコードです
+    if (!uploadedFile) {
+        alert('画像を選択してください。');
+        return;
+    }
+    
+    const analyzeBtn = document.getElementById('analyzeImageBtn');
+    const originalText = analyzeBtn.innerHTML;
+    
+    // ローディング表示
+    analyzeBtn.innerHTML = `
+        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        解析中...
+    `;
+    analyzeBtn.disabled = true;
+    
+    try {
+        // FormDataを作成
+        const formData = new FormData();
+        formData.append('image', uploadedFile);
+        
+        // サーバーに解析リクエスト
+        const response = await fetch('/api/analyze-image', {
+            method: 'POST',
+            body: formData
+        });
+        
+        if (!response.ok) {
+            throw new Error('解析リクエストに失敗しました');
+        }
+        
+        const result = await response.json();
+        displayAnalysisResult(result);
+        
+    } catch (error) {
+        console.error('解析エラー:', error);
+        alert('画像解析に失敗しました: ' + error.message);
+        
+    } finally {
+        // ボタンを元に戻す
+        analyzeBtn.innerHTML = originalText;
+        analyzeBtn.disabled = false;
+    }
+    */
+}
+
+// 解析結果表示
+function displayAnalysisResult(result) {
+    analysisResult = result;
+    const resultArea = document.getElementById('analysisResultArea');
+    const resultDiv = document.getElementById('analysisResult');
+    const applyBtn = document.getElementById('applyResultBtn');
+    
+    let resultHtml = '';
+    
+    if (result.success) {
+        resultHtml += '<div class="row">';
+        
+        if (result.molecular_formula) {
+            resultHtml += `
+                <div class="col-md-6 mb-2">
+                    <strong>分子式:</strong> <code>${result.molecular_formula}</code>
+                </div>
+            `;
+        }
+        
+        if (result.molecular_weight) {
+            resultHtml += `
+                <div class="col-md-6 mb-2">
+                    <strong>分子量:</strong> <code>${result.molecular_weight}</code>
+                </div>
+            `;
+        }
+        
+        resultHtml += '</div>';
+        
+        if (result.method) {
+            resultHtml += `<small class="text-muted">解析方法: ${result.method}</small>`;
+        }
+        
+        if (result.confidence) {
+            const confidencePercent = Math.round(result.confidence * 100);
+            resultHtml += ` <span class="badge bg-secondary">${confidencePercent}% 信頼度</span>`;
+        }
+        
+        applyBtn.style.display = 'inline-block';
+        
+    } else {
+        resultHtml = `
+            <div class="text-warning">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                ${result.error || '分子情報を自動抽出できませんでした'}
+            </div>
+            <small class="text-muted">手動で入力してください。</small>
+        `;
+        applyBtn.style.display = 'none';
+    }
+    
+    resultDiv.innerHTML = resultHtml;
+    resultArea.style.display = 'block';
+}
+
+// 解析結果をフォームに適用
+function applyAnalysisResult() {
+    if (!analysisResult || !analysisResult.success) {
+        return;
+    }
+    
+    // 分子式を適用
+    if (analysisResult.molecular_formula) {
+        const formulaInput = document.getElementById('molecular_formula');
+        if (!formulaInput.value || confirm('既存の分子式を上書きしますか？')) {
+            formulaInput.value = analysisResult.molecular_formula;
+            // フィールドをハイライト
+            formulaInput.classList.add('border-success');
+            setTimeout(() => formulaInput.classList.remove('border-success'), 2000);
+        }
+    }
+    
+    // 分子量を適用
+    if (analysisResult.molecular_weight) {
+        const weightInput = document.getElementById('molecular_weight');
+        if (!weightInput.value || confirm('既存の分子量を上書きしますか？')) {
+            weightInput.value = analysisResult.molecular_weight;
+            // フィールドをハイライト
+            weightInput.classList.add('border-success');
+            setTimeout(() => weightInput.classList.remove('border-success'), 2000);
+        }
+    }
+    
+    // 成功メッセージ
+    const applyBtn = document.getElementById('applyResultBtn');
+    const originalText = applyBtn.innerHTML;
+    applyBtn.innerHTML = `
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+            <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+        </svg>
+        適用完了！
+    `;
+    applyBtn.classList.replace('btn-success', 'btn-outline-success');
+    
+    setTimeout(() => {
+        applyBtn.innerHTML = originalText;
+        applyBtn.classList.replace('btn-outline-success', 'btn-success');
+    }, 2000);
+}
+
+// 高精度分子式変更時の分子量自動計算
+document.getElementById('molecular_formula').addEventListener('input', function() {
+    const formula = this.value.trim();
+    
+    // リアルタイム検証
+    validateFormulaRealtime(formula);
+    
+    // 分子量計算（少し遅延させてAPIコール数を削減）
+    clearTimeout(this.calculationTimeout);
+    this.calculationTimeout = setTimeout(() => {
+        if (formula) {
+            calculateHighPrecisionMolecularWeight(formula);
+        } else {
+            // 分子式が空の場合、分子量もクリア
+            const weightInput = document.getElementById('molecular_weight');
+            weightInput.value = '';
+            weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
+            weightInput.title = '';
+            weightInput.placeholder = '例: 78.11';
+        }
+    }, 500);
+});
+
+// リアルタイム分子式検証
+async function validateFormulaRealtime(formula) {
+    const formulaInput = document.getElementById('molecular_formula');
+    const weightInput = document.getElementById('molecular_weight');
+    
+    if (!formula) {
+        formulaInput.classList.remove('border-success', 'border-warning', 'border-danger');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/validate-molecular-formula', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ formula: formula })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                if (result.is_valid) {
+                    formulaInput.classList.remove('border-warning', 'border-danger');
+                    formulaInput.classList.add('border-success');
+                } else {
+                    formulaInput.classList.remove('border-success', 'border-warning');
+                    formulaInput.classList.add('border-danger');
+                    formulaInput.title = result.error_message || '無効な分子式';
+                    weightInput.value = ''; // 無効な場合は分子量をクリア
+                }
+            }
+        }
+    } catch (error) {
+        console.error('分子式検証エラー:', error);
+        formulaInput.classList.remove('border-success', 'border-warning');
+        formulaInput.classList.add('border-warning');
+    }
+}
+
+// 高精度分子量計算
+async function calculateHighPrecisionMolecularWeight(formula) {
+    const weightInput = document.getElementById('molecular_weight');
+    const formulaInput = document.getElementById('molecular_formula');
+    
+    // 計算中表示
+    weightInput.placeholder = '計算中...';
+    weightInput.disabled = true;
+    
+    try {
+        const response = await fetch('/api/calculate-molecular-weight', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ formula: formula })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.molecular_weight) {
+                // 常に最新の計算結果で更新
+                weightInput.value = result.molecular_weight;
+                
+                // 古いスタイルをクリア
+                weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
+                
+                // 精度に応じたフィードバック
+                if (result.confidence >= 0.95) {
+                    weightInput.classList.add('border-success');
+                    weightInput.title = `高精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `データソース: ${result.source}\n` +
+                                      `計算方法: ${result.method}\n` +
+                                      `精度: 小数点${result.precision}桁`;
+                } else if (result.confidence >= 0.85) {
+                    weightInput.classList.add('border-info');
+                    weightInput.title = `標準精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `データソース: ${result.source}`;
+                } else {
+                    weightInput.classList.add('border-warning');
+                    weightInput.title = `推定値 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `手動で確認することをお勧めします`;
+                }
+                
+                // 計算情報を表示（デバッグ用）
+                console.log('分子量計算結果:', result);
+                
+                // フィードバックを一定時間後に削除
+                setTimeout(() => {
+                    weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+                }, 3000);
+                
+                // 化合物名が取得できた場合の処理
+                if (result.compound_name) {
+                    showCompoundNameSuggestion(result.compound_name);
+                }
+            } else {
+                // 計算失敗の場合
+                weightInput.value = '';
+                weightInput.placeholder = '手動入力してください';
+                weightInput.title = result.error || '分子量を計算できませんでした';
+                weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+                weightInput.classList.add('border-danger');
+            }
+        }
+    } catch (error) {
+        console.error('高精度分子量計算エラー:', error);
+        weightInput.value = '';
+        weightInput.placeholder = '手動入力してください';
+        weightInput.title = '計算サービスに接続できませんでした';
+        weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+        weightInput.classList.add('border-warning');
+    } finally {
+        weightInput.disabled = false;
+        if (!weightInput.value) {
+            weightInput.placeholder = '例: 78.11';
+        }
+    }
+}
+
+// 化合物名提案表示
+function showCompoundNameSuggestion(compoundName) {
+    const nameInput = document.getElementById('name');
+    
+    if (!nameInput.value && compoundName) {
+        // 化合物名が空の場合のみ提案を表示
+        const suggestion = document.createElement('div');
+        suggestion.className = 'alert alert-info alert-dismissible fade show mt-2';
+        suggestion.innerHTML = `
+            <div class="d-flex align-items-center">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                </svg>
+                <div class="flex-grow-1">
+                    <strong>化合物名の提案:</strong> ${compoundName}
+                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" onclick="applyCompoundName('${compoundName}')">
+                        適用
+                    </button>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `;
+        
+        nameInput.parentNode.appendChild(suggestion);
+        
+        // 30秒後に自動で削除
+        setTimeout(() => {
+            if (suggestion.parentNode) {
+                suggestion.remove();
+            }
+        }, 30000);
+    }
+}
+
+// 化合物名を適用
+function applyCompoundName(name) {
+    const nameInput = document.getElementById('name');
+    if (!nameInput.value) {
+        nameInput.value = name;
+        nameInput.classList.add('border-success');
+        setTimeout(() => nameInput.classList.remove('border-success'), 2000);
+    }
+    
+    // 提案を削除
+    const suggestion = document.querySelector('.alert-info');
+    if (suggestion) {
+        suggestion.remove();
+    }
+}
+
+// ページロード時に計算システム情報を取得
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/calculation-info')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                console.log('分子量計算システム情報:', result.info);
+                
+                // 分子式フィールドにヘルプテキストを追加
+                const formulaInput = document.getElementById('molecular_formula');
+                const helpText = formulaInput.parentNode.querySelector('.form-text');
+                if (helpText) {
+                    helpText.innerHTML += `<br><span class="text-muted small">💡 高精度計算システム (精度: ${result.info.max_precision_digits}桁, データソース: ${result.info.atomic_data_source})</span>`;
+                }
+            }
+        })
+        .catch(error => console.error('計算システム情報取得エラー:', error));
+});
+</script>
 {% endblock %}

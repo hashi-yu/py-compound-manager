@@ -2,8 +2,12 @@ from flask import Blueprint, render_template, request, redirect, url_for, flash,
 from werkzeug.utils import secure_filename
 from app import db
 from app.models import Compound, SpectralData, Project
+from app.utils.image_analyzer import ChemicalImageAnalyzer
+from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
 import os
 import uuid
+import tempfile
+import logging
 
 main_bp = Blueprint('main', __name__)
 
@@ -287,3 +291,183 @@ def delete_project(project_id):
     
     flash(f'プロジェクト「{project_name}」が削除されました。関連する化合物は未分類になりました。', 'success')
     return redirect(url_for('main.projects'))
+
+# =====================================
+# API エンドポイント（画像解析機能）
+# =====================================
+
+@main_bp.route('/api/analyze-image', methods=['POST'])
+def analyze_image_api():
+    """画像解析APIエンドポイント（無効化）"""
+    # 画像解析機能は一時的に無効化されています
+    return jsonify({
+        'success': False,
+        'error': '画像解析機能は現在無効化されています'
+    }), 503
+    
+    # 以下は保持されているコードです
+    """
+    try:
+        # ファイルの存在確認
+        if 'image' not in request.files:
+            return jsonify({
+                'success': False,
+                'error': '画像ファイルが送信されていません'
+            }), 400
+        
+        file = request.files['image']
+        if file.filename == '':
+            return jsonify({
+                'success': False,
+                'error': 'ファイルが選択されていません'
+            }), 400
+        
+        # ファイル形式チェック
+        if not allowed_file(file.filename):
+            return jsonify({
+                'success': False,
+                'error': 'サポートされていないファイル形式です'
+            }), 400
+        
+        # 一時ファイルに保存
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(file.filename)[1]) as temp_file:
+            file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        try:
+            # 画像解析実行
+            analyzer = ChemicalImageAnalyzer()
+            result = analyzer.analyze_image(temp_path)
+            
+            # 一時ファイル削除
+            os.unlink(temp_path)
+            
+            return jsonify(result)
+            
+        except Exception as e:
+            # 一時ファイル削除（エラー時）
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise e
+            
+    except Exception as e:
+        logging.error(f"Image analysis API error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'解析処理でエラーが発生しました: {str(e)}'
+        }), 500
+    """
+
+@main_bp.route('/api/calculate-molecular-weight', methods=['POST'])
+def calculate_molecular_weight_api():
+    """高精度分子量計算APIエンドポイント"""
+    try:
+        data = request.get_json()
+        if not data or 'formula' not in data:
+            return jsonify({
+                'success': False,
+                'error': '分子式が指定されていません'
+            }), 400
+        
+        formula = data['formula'].strip()
+        if not formula:
+            return jsonify({
+                'success': False,
+                'error': '分子式が空です'
+            }), 400
+        
+        # 高精度分子量計算システムを使用
+        calculator = HighPrecisionMolecularCalculator()
+        
+        # 分子式の妥当性チェック
+        is_valid, validation_error = calculator.validate_molecular_formula(formula)
+        if not is_valid:
+            return jsonify({
+                'success': False,
+                'error': validation_error or '無効な分子式です'
+            }), 400
+        
+        # 高精度分子量計算実行
+        result = calculator.calculate_molecular_weight(formula)
+        
+        if result.molecular_weight is None:
+            return jsonify({
+                'success': False,
+                'error': result.error or '分子量を計算できませんでした',
+                'method': result.method,
+                'source': result.source
+            }), 400
+        
+        return jsonify({
+            'success': True,
+            'molecular_weight': result.molecular_weight,
+            'formula': result.formula,
+            'confidence': result.confidence,
+            'method': result.method,
+            'source': result.source,
+            'precision': result.precision,
+            'compound_name': result.compound_name,
+            'cas_number': result.cas_number,
+            'calculation_info': {
+                'precision_digits': result.precision,
+                'confidence_percent': round(result.confidence * 100, 1),
+                'data_source': result.source,
+                'calculation_method': result.method
+            }
+        })
+        
+    except Exception as e:
+        logging.error(f"High-precision molecular weight calculation API error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'計算処理でエラーが発生しました: {str(e)}'
+        }), 500
+
+@main_bp.route('/api/validate-molecular-formula', methods=['POST'])
+def validate_molecular_formula_api():
+    """分子式検証APIエンドポイント"""
+    try:
+        data = request.get_json()
+        if not data or 'formula' not in data:
+            return jsonify({
+                'success': False,
+                'error': '分子式が指定されていません'
+            }), 400
+        
+        formula = data['formula'].strip()
+        calculator = HighPrecisionMolecularCalculator()
+        
+        is_valid, error_message = calculator.validate_molecular_formula(formula)
+        
+        return jsonify({
+            'success': True,
+            'is_valid': is_valid,
+            'error_message': error_message,
+            'formula': formula
+        })
+        
+    except Exception as e:
+        logging.error(f"Formula validation API error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'検証処理でエラーが発生しました: {str(e)}'
+        }), 500
+
+@main_bp.route('/api/calculation-info', methods=['GET'])
+def get_calculation_info_api():
+    """計算システム情報取得APIエンドポイント"""
+    try:
+        calculator = HighPrecisionMolecularCalculator()
+        info = calculator.get_calculation_info()
+        
+        return jsonify({
+            'success': True,
+            'info': info
+        })
+        
+    except Exception as e:
+        logging.error(f"Calculation info API error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': f'情報取得でエラーが発生しました: {str(e)}'
+        }), 500
