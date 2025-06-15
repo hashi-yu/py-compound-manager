@@ -83,5 +83,156 @@ function deleteStructure(compoundId) {
         form.submit();
     }
 }
+
+// 高精度分子式変更時の分子量自動計算
+document.getElementById('molecular_formula').addEventListener('input', function() {
+    const formula = this.value.trim();
+    
+    // リアルタイム検証
+    validateFormulaRealtime(formula);
+    
+    // 分子量計算（少し遅延させてAPIコール数を削減）
+    clearTimeout(this.calculationTimeout);
+    this.calculationTimeout = setTimeout(() => {
+        if (formula) {
+            calculateHighPrecisionMolecularWeight(formula);
+        } else {
+            // 分子式が空の場合、分子量もクリア
+            const weightInput = document.getElementById('molecular_weight');
+            weightInput.value = '';
+            weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
+            weightInput.title = '';
+            weightInput.placeholder = '例: 78.11';
+        }
+    }, 500);
+});
+
+// リアルタイム分子式検証
+async function validateFormulaRealtime(formula) {
+    const formulaInput = document.getElementById('molecular_formula');
+    const weightInput = document.getElementById('molecular_weight');
+    
+    if (!formula) {
+        formulaInput.classList.remove('border-success', 'border-warning', 'border-danger');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/validate-molecular-formula', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ formula: formula })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                if (result.is_valid) {
+                    formulaInput.classList.remove('border-warning', 'border-danger');
+                    formulaInput.classList.add('border-success');
+                } else {
+                    formulaInput.classList.remove('border-success', 'border-warning');
+                    formulaInput.classList.add('border-danger');
+                    formulaInput.title = result.error_message || '無効な分子式';
+                    weightInput.value = ''; // 無効な場合は分子量をクリア
+                }
+            }
+        }
+    } catch (error) {
+        console.error('分子式検証エラー:', error);
+        formulaInput.classList.remove('border-success', 'border-warning');
+        formulaInput.classList.add('border-warning');
+    }
+}
+
+// 高精度分子量計算
+async function calculateHighPrecisionMolecularWeight(formula) {
+    const weightInput = document.getElementById('molecular_weight');
+    const formulaInput = document.getElementById('molecular_formula');
+    
+    // 計算中表示
+    weightInput.placeholder = '計算中...';
+    weightInput.disabled = true;
+    
+    try {
+        const response = await fetch('/api/calculate-molecular-weight', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ formula: formula })
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success && result.molecular_weight) {
+                // 常に最新の計算結果で更新
+                weightInput.value = result.molecular_weight;
+                
+                // 古いスタイルをクリア
+                weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
+                
+                // 精度に応じたフィードバック
+                if (result.confidence >= 0.95) {
+                    weightInput.classList.add('border-success');
+                    weightInput.title = `高精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `データソース: ${result.source}\n` +
+                                      `計算方法: ${result.method}\n` +
+                                      `精度: 小数点${result.precision}桁`;
+                } else if (result.confidence >= 0.85) {
+                    weightInput.classList.add('border-info');
+                    weightInput.title = `標準精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `データソース: ${result.source}`;
+                } else {
+                    weightInput.classList.add('border-warning');
+                    weightInput.title = `推定値 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
+                                      `手動で確認することをお勧めします`;
+                }
+                
+                // 計算情報を表示（デバッグ用）
+                console.log('分子量計算結果:', result);
+                
+                // フィードバックを一定時間後に削除
+                setTimeout(() => {
+                    weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+                }, 3000);
+                
+            } else {
+                // 計算失敗の場合
+                weightInput.value = '';
+                weightInput.placeholder = '手動入力してください';
+                weightInput.title = result.error || '分子量を計算できませんでした';
+                weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+                weightInput.classList.add('border-danger');
+            }
+        }
+    } catch (error) {
+        console.error('高精度分子量計算エラー:', error);
+        weightInput.value = '';
+        weightInput.placeholder = '手動入力してください';
+        weightInput.title = '計算サービスに接続できませんでした';
+        weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+        weightInput.classList.add('border-warning');
+    } finally {
+        weightInput.disabled = false;
+        if (!weightInput.value) {
+            weightInput.placeholder = '例: 78.11';
+        }
+    }
+}
+
+// ページロード時に計算システム情報を取得
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/calculation-info')
+        .then(response => response.json())
+        .then(result => {
+            if (result.success) {
+                console.log('分子量計算システム情報:', result.info);
+            }
+        })
+        .catch(error => console.error('計算システム情報取得エラー:', error));
+});
 </script>
 {% endblock %}
