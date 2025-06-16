@@ -2,9 +2,58 @@
 
 {% block main_content %}
 
-{% if compounds %}
-<!-- 化合物カードグリッド -->
+{% if subfolders or compounds %}
+<!-- フォルダ・化合物カードグリッド -->
 <div class="row g-4">
+    <!-- サブフォルダカード -->
+    {% for subfolder in subfolders %}
+    <div class="col-md-6 col-lg-4 col-xl-3">
+        <div class="card h-100 folder-card" 
+             onclick="window.location.href='{{ url_for('main.index', folder_id=subfolder.id) }}'">
+            
+            <!-- フォルダアイコンエリア -->
+            <div class="folder-icon-area">
+                <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" class="folder-icon">
+                    <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                </svg>
+            </div>
+            
+            <div class="card-body d-flex flex-column">
+                <!-- フォルダ名 -->
+                <h5 class="card-title" title="{{ subfolder.name }}">{{ subfolder.name }}</h5>
+                
+                <!-- フォルダ情報 -->
+                <div class="flex-grow-1">
+                    <p class="card-text">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+                        </svg>
+                        {{ subfolder.compounds|length }} compounds
+                    </p>
+                    
+                    {% if subfolder.children %}
+                    <p class="card-text">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                        </svg>
+                        {{ subfolder.children|length }} subfolders
+                    </p>
+                    {% endif %}
+                    
+                    <p class="card-text">
+                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12z"/>
+                        </svg>
+                        Updated: {{ subfolder.updated_date.strftime('%m/%d') }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- 化合物カード -->
     {% for compound in compounds %}
     <div class="col-md-6 col-lg-4 col-xl-3">
         <div class="card h-100 compound-card" 
@@ -91,28 +140,48 @@
 <!-- 空状態 -->
 <div class="empty-state">
     <div class="empty-state-icon">
+        {% if current_folder %}
+        <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+        </svg>
+        {% else %}
         <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
             <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
             <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
         </svg>
+        {% endif %}
     </div>
-    <h4 class="empty-state-title">No Compounds Found</h4>
+    <h4 class="empty-state-title">
+        {% if current_folder %}
+        Empty Folder
+        {% else %}
+        No Items Found
+        {% endif %}
+    </h4>
     <p class="empty-state-text">
         {% if current_folder %}
-        No compounds have been registered in this folder yet.<br>
-        Add your first compound to start organizing.
+        This folder is empty.<br>
+        Add compounds or create subfolders to organize your data.
         {% else %}
-        No compounds have been registered yet.<br>
-        Add your first compound to build the database.
+        No compounds or folders have been created yet.<br>
+        Start by adding your first compound or creating a folder.
         {% endif %}
     </p>
-    <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary">
-        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
-            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
-            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
-        </svg>
-        Add First Compound
-    </a>
+    <div class="empty-state-actions">
+        <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary me-2">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            Add Compound
+        </a>
+        <button class="btn btn-outline-primary" onclick="showNewFolderModal()">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+            </svg>
+            Create Folder
+        </button>
+    </div>
 </div>
 {% endif %}
 

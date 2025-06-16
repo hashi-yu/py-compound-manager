@@ -77,6 +77,9 @@ def index():
     
     if folder_id:
         current_folder = Folder.query.get(folder_id)
+        # サブフォルダを取得
+        subfolders = Folder.query.filter_by(parent_id=folder_id).order_by(Folder.name).all()
+        
         if include_subfolders:
             # 親フォルダには子フォルダの化合物も含める
             compounds = get_all_descendant_compounds(folder_id)
@@ -85,6 +88,8 @@ def index():
             compounds = Compound.query.filter_by(folder_id=folder_id).all()
         compounds = sorted(compounds, key=lambda x: x.updated_date, reverse=True)
     else:
+        # ルートフォルダの場合は親がないフォルダを表示
+        subfolders = Folder.query.filter_by(parent_id=None).order_by(Folder.name).all()
         compounds = Compound.query.filter_by(folder_id=None).order_by(Compound.updated_date.desc()).all()
         current_folder = None
     
@@ -93,6 +98,7 @@ def index():
     
     return render_template('index.html', 
                          compounds=compounds, 
+                         subfolders=subfolders,
                          folder_tree=folder_tree, 
                          current_folder=current_folder,
                          unorganized_count=unorganized_count,

@@ -83,7 +83,7 @@
     <div class="finder-main">
         <!-- Breadcrumb Navigation -->
         {% if current_folder %}
-        <nav aria-label="breadcrumb" style="margin-left: 250px; padding-left: 16px;">
+        <nav aria-label="breadcrumb" style="margin-left: 200px; padding-left: 16px;">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item">
                     <a href="{{ url_for('main.index') }}">Home</a>
@@ -114,23 +114,17 @@
                         </svg>
                     </button>
                 </div>
-                <div class="search-filters">
-                    <select class="form-select form-select-sm" id="sortBy">
-                        <option value="updated_date">Updated Date</option>
+                <div class="sort-controls">
+                    <select class="modern-select" id="sortBy">
+                        <option value="updated_date">Recently Updated</option>
                         <option value="name">Name</option>
                         <option value="molecular_weight">Molecular Weight</option>
-                        <option value="created_date">Created Date</option>
+                        <option value="created_date">Recently Created</option>
                     </select>
-                    <select class="form-select form-select-sm" id="sortOrder">
-                        <option value="desc">Descending</option>
-                        <option value="asc">Ascending</option>
+                    <select class="modern-select" id="sortOrder">
+                        <option value="desc">↓</option>
+                        <option value="asc">↑</option>
                     </select>
-                    <button class="btn btn-outline-secondary btn-sm" id="toggleFilters">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
-                            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
-                        </svg>
-                        Filters
-                    </button>
                 </div>
             </div>
             
@@ -207,14 +201,15 @@
                     {% endif %}
                 </div>
                 <div class="content-actions">
-                    <button class="btn btn-outline-secondary btn-sm me-2" id="selectAllToggle">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                    <button class="action-btn" id="selectAllToggle">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M2.5 8a5.5 5.5 0 0 1 11 0 .5.5 0 0 0 1 0 6.5 6.5 0 1 0-13 0 .5.5 0 0 0 1 0z"/>
                             <path d="M7.394 6.813a.5.5 0 1 0-.788.624l2.5 3.126a.5.5 0 0 0 .79-.004l5-6.25a.5.5 0 1 0-.792-.634L9.5 9.367 7.394 6.813z"/>
                         </svg>
                         Select All
                     </button>
-                    <div class="bulk-actions-container me-2" id="bulkActions" style="display: none;">
+                    
+                    <div class="bulk-actions-container" id="bulkActions" style="display: none;">
                         <div class="bulk-actions-bar">
                             <span class="bulk-count" id="bulkCount">3 selected</span>
                             <div class="bulk-buttons">
@@ -238,9 +233,9 @@
                             </div>
                         </div>
                     </div>
-                    <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary">
-                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
-                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                    
+                    <a href="{{ url_for('main.add_compound') }}" class="primary-btn">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
                         </svg>
                         Add Compound
@@ -332,35 +327,40 @@
     background: #ffffff;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    border: 1px solid #e5e5ea;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    border: 1px solid #d1d1d6;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
 }
 
 .finder-sidebar {
     width: 240px;
     min-width: 240px;
-    background: #f8f9fa;
-    border-right: 1px solid #e5e5ea;
+    background: #f5f5f7;
+    border-right: 1px solid #d2d2d7;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 .sidebar-header {
-    padding: 16px;
-    background: #ffffff;
+    padding: 12px 16px;
+    background: #f5f5f7;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #e5e5ea;
+    border-bottom: 1px solid #d2d2d7;
+    min-height: 52px;
 }
 
 .sidebar-title {
     margin: 0;
     font-weight: 600;
-    font-size: 16px;
-    color: #333;
+    font-size: 13px;
+    color: #1d1d1f;
     display: flex;
     align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
 .sidebar-content {
@@ -377,22 +377,24 @@
 
 .sidebar-item {
     margin: 1px 8px;
-    padding: 10px 12px;
+    padding: 6px 12px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    transition: all 0.15s ease;
     border: none;
     background: none;
-    border-radius: 8px;
+    border-radius: 6px;
     text-align: left;
+    font-size: 13px;
 }
 
 .sidebar-item:hover {
-    background: #e3f2fd;
+    background: rgba(0, 122, 255, 0.1);
 }
 
 .sidebar-item.active {
-    background: #007AFF;
+    background: linear-gradient(to bottom, #4d9ff7, #007AFF);
     color: white;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), inset 0 -1px 0 rgba(0, 0, 0, 0.1);
 }
 
 .sidebar-item.drag-over {
@@ -418,13 +420,17 @@
     background: #ffffff;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 /* Search Header Styles */
 .search-header {
-    padding: 16px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e5ea;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    border-bottom: 1px solid #d2d2d7;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
 }
 
 .search-container {
@@ -490,42 +496,33 @@
     transform: translateY(-50%) scale(1.1);
 }
 
-.search-filters {
+.sort-controls {
     display: flex;
-    gap: 12px;
+    gap: 8px;
     align-items: center;
 }
 
-.search-filters .form-select {
-    border: 2px solid var(--apple-gray-2);
-    border-radius: var(--apple-radius-md);
-    padding: 10px 16px;
-    font-weight: 500;
-    background: rgba(255, 255, 255, 0.9);
+.modern-select {
+    background: #ffffff;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: #1d1d1f;
+    cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 120px;
 }
 
-.search-filters .form-select:focus {
-    border-color: var(--apple-blue);
+.modern-select:hover {
+    border-color: #007AFF;
+    background: #f8f9ff;
+}
+
+.modern-select:focus {
+    outline: none;
+    border-color: #007AFF;
     box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
-}
-
-.search-filters .btn {
-    border-radius: var(--apple-radius-md);
-    padding: 10px 20px;
-    font-weight: 600;
-    transition: all 0.2s ease;
-    border: 2px solid var(--apple-gray-2);
-    background: rgba(255, 255, 255, 0.9);
-    color: #1D1D1F;
-}
-
-.search-filters .btn:hover {
-    background: var(--apple-blue);
-    border-color: var(--apple-blue);
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: var(--apple-shadow-md);
 }
 
 .advanced-filters {
@@ -560,28 +557,283 @@
     border-color: #007bff;
 }
 
-/* Bulk Action Styles */
-.bulk-action-bar {
-    position: sticky;
-    top: 0;
-    background: #fff3cd;
-    border: 1px solid #ffeaa7;
-    padding: 8px 16px;
-    margin: -20px -20px 20px -20px;
-    border-radius: 6px;
-    display: none;
-    align-items: center;
-    gap: 12px;
-    z-index: 10;
+/* Content Header Styles */
+.content-header {
+    padding: 20px 24px;
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
 }
 
-.bulk-action-bar.show {
+.content-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0;
+    color: #1d1d1f;
+}
+
+.content-subtitle {
+    font-size: 14px;
+    color: var(--apple-gray-6);
+    margin: 4px 0 0 0;
+}
+
+.subfolder-toggle {
+    margin-top: 12px;
+}
+
+.form-check-label {
+    font-size: 13px;
+    color: var(--apple-gray-6);
+    margin-left: 8px;
+}
+
+.content-actions {
     display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
-.compound-card {
+/* Action Button Styles */
+.action-btn {
+    background: #ffffff;
+    border: 1px solid #d2d2d7;
+    border-radius: 8px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #1d1d1f;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    background: #f5f5f7;
+    border-color: var(--apple-blue);
+    color: var(--apple-blue);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #007AFF, #5AC8FA);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 10px rgba(0, 122, 255, 0.25);
+    font-weight: 600;
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, #0056CC, #4AA3E8);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0, 122, 255, 0.35);
+    color: white;
+    text-decoration: none;
+}
+
+/* Bulk Actions Styles */
+.bulk-actions-container {
+    position: relative;
+}
+
+.bulk-actions-bar {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    border-radius: 12px;
+    padding: 8px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.bulk-count {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--apple-blue);
+    background: rgba(0, 122, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    min-width: 80px;
+    text-align: center;
+}
+
+.bulk-buttons {
+    display: flex;
+    gap: 6px;
+}
+
+.bulk-btn {
+    background: #ffffff;
+    border: 1px solid #e5e5ea;
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+}
+
+.bulk-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.bulk-btn-move {
+    color: var(--apple-blue);
+}
+
+.bulk-btn-move:hover {
+    background: rgba(0, 122, 255, 0.1);
+    border-color: var(--apple-blue);
+}
+
+.bulk-btn-export {
+    color: var(--apple-green);
+}
+
+.bulk-btn-export:hover {
+    background: rgba(52, 199, 89, 0.1);
+    border-color: var(--apple-green);
+}
+
+.bulk-btn-delete {
+    color: var(--apple-red);
+}
+
+.bulk-btn-delete:hover {
+    background: rgba(255, 59, 48, 0.1);
+    border-color: var(--apple-red);
+}
+
+/* Content Body */
+.content-body {
+    flex: 1;
+    padding: 24px;
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .finder-container {
+        flex-direction: column;
+        height: auto;
+    }
+    
+    .finder-sidebar {
+        width: 100%;
+        max-height: 200px;
+    }
+    
+    .search-input-group {
+        min-width: 200px;
+    }
+    
+    .content-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .bulk-actions-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .bulk-buttons {
+        align-self: center;
+    }
+}
+
+/* Card Styles */
+.compound-card,
+.folder-card {
     position: relative;
     transition: all 0.2s ease;
+    cursor: pointer;
+    border: 1px solid #e5e5ea;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #ffffff;
+}
+
+.compound-card:hover,
+.folder-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+    border-color: var(--apple-blue);
+}
+
+/* Folder Card Specific Styles */
+.folder-card {
+    background: linear-gradient(135deg, #f8f9ff, #ffffff);
+    border: 1px solid #d1d1d6;
+}
+
+.folder-card:hover {
+    background: linear-gradient(135deg, #e8f2ff, #f8f9ff);
+    border-color: var(--apple-blue);
+}
+
+.folder-icon-area {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 120px;
+    background: linear-gradient(135deg, #f0f4ff, #e8f2ff);
+    border-bottom: 1px solid #e5e5ea;
+}
+
+.folder-icon {
+    color: var(--apple-blue);
+    opacity: 0.8;
+    transition: all 0.2s ease;
+}
+
+.folder-card:hover .folder-icon {
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+.folder-card .card-title {
+    color: #1d1d1f;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.folder-card .card-text {
+    color: var(--apple-gray-6);
+    font-size: 13px;
+    margin-bottom: 4px;
 }
 
 .compound-card.selected {
@@ -633,6 +885,53 @@
 @keyframes spin {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
+}
+
+/* Empty State Styles */
+.empty-state {
+    text-align: center;
+    padding: 80px 20px;
+    background: linear-gradient(135deg, #f8f9ff, #ffffff);
+    border-radius: 16px;
+    border: 1px solid #e5e5ea;
+}
+
+.empty-state-icon {
+    margin-bottom: 24px;
+    color: var(--apple-gray-5);
+}
+
+.empty-state-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1d1d1f;
+    margin-bottom: 16px;
+}
+
+.empty-state-text {
+    font-size: 16px;
+    color: var(--apple-gray-6);
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+
+.empty-state-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.empty-state-actions .btn {
+    padding: 12px 24px;
+    font-weight: 600;
+    border-radius: 10px;
+    transition: all 0.2s ease;
+}
+
+.empty-state-actions .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .sidebar-item-content {
@@ -696,9 +995,12 @@
 }
 
 .content-header {
-    padding: 16px;
-    background: #ffffff;
-    border-bottom: 1px solid #e5e5ea;
+    padding: 12px 16px;
+    background: linear-gradient(to bottom, #fafafa, #f0f0f0);
+    border-bottom: 1px solid #d2d2d7;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
 }
 
 .content-title {
@@ -757,9 +1059,9 @@
 
 .content-body {
     flex: 1;
-    padding: 16px;
+    padding: 20px;
     overflow-y: auto;
-    background: #fafafa;
+    background: #ffffff;
 }
 
 .breadcrumb {
@@ -999,6 +1301,280 @@
 .bulk-btn-delete:hover {
     background: rgba(255, 59, 48, 0.1);
     border-color: #FF3B30;
+}
+
+/* Finder Toolbar Styles */
+.finder-toolbar {
+    padding: 8px 12px;
+    background: linear-gradient(to bottom, #fafafa, #efefef);
+    border-bottom: 1px solid #d2d2d7;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    font-size: 13px;
+}
+
+.toolbar-left, .toolbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.toolbar-center {
+    flex: 1;
+    max-width: 300px;
+    margin: 0 20px;
+}
+
+.view-controls {
+    display: flex;
+    background: #ffffff;
+    border: 1px solid #c6c6c6;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.view-btn {
+    background: none;
+    border: none;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-right: 1px solid #c6c6c6;
+    color: #666;
+}
+
+.view-btn:last-child {
+    border-right: none;
+}
+
+.view-btn:hover {
+    background: #f0f0f0;
+}
+
+.view-btn.active {
+    background: linear-gradient(to bottom, #4d9ff7, #007AFF);
+    color: white;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.toolbar-btn {
+    background: none;
+    border: 1px solid #c6c6c6;
+    border-radius: 5px;
+    padding: 6px 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: #666;
+    background: #ffffff;
+}
+
+.toolbar-btn:hover {
+    background: #f0f0f0;
+}
+
+.filter-bar {
+    padding: 8px 16px;
+    background: #f0f0f0;
+    border-bottom: 1px solid #d2d2d7;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.filter-bar .form-select {
+    font-size: 12px;
+    padding: 4px 8px;
+    border: 1px solid #c6c6c6;
+    border-radius: 4px;
+    background: #ffffff;
+}
+
+/* Finder-style search input */
+.search-input {
+    width: 100%;
+    padding: 6px 32px 6px 28px;
+    border: 1px solid #c6c6c6;
+    border-radius: 15px;
+    font-size: 13px;
+    background: #ffffff;
+    transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007AFF;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+.search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #999;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #999;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.search-clear:hover {
+    background: #666;
+}
+
+/* Finder window controls */
+.finder-container::before {
+    content: '';
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 12px;
+    height: 12px;
+    background: #ff5f57;
+    border-radius: 50%;
+    z-index: 10;
+    box-shadow: 
+        20px 0 0 #ffbd2e,
+        40px 0 0 #28ca42;
+}
+
+/* Modern Sort Controls */
+.sort-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.modern-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 13px;
+    color: #333;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.modern-select:focus {
+    outline: none;
+    border-color: #007AFF;
+    box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* Content Actions */
+.content-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.action-btn {
+    background: rgba(255, 255, 255, 0.9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 10px;
+    padding: 8px 16px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    font-weight: 500;
+}
+
+.action-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    border-color: rgba(0, 0, 0, 0.15);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #007AFF, #5AC8FA);
+    border: none;
+    border-radius: 12px;
+    padding: 10px 20px;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    font-weight: 600;
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, #0056CC, #4AA3E8);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+}
+
+/* Content Header */
+.content-header {
+    padding: 16px 20px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content-title {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #1D1D1F;
+}
+
+.content-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 0.9rem;
+    color: #8E8E93;
+    font-weight: 500;
+}
+
+.subfolder-toggle {
+    margin-top: 8px;
+}
+
+.subfolder-toggle .form-check-label {
+    font-size: 13px;
+    color: #666;
 }
 
 /* Mobile Responsive Design */
@@ -1296,6 +1872,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // 基本機能の初期化
     initializeSearch();
     initializeBulkActions();
+    
 });
 
 // 検索機能の初期化
@@ -1358,7 +1935,7 @@ function initializeSearch() {
 async function performSearch() {
     const searchInput = document.getElementById('globalSearch');
     const sortBy = document.getElementById('sortBy');
-    const sortOrder = document.getElementById('sortOrder');
+    const sortOrderBtn = document.getElementById('sortOrder');
     const filterFolder = document.getElementById('filterFolder');
     const filterDateFrom = document.getElementById('filterDateFrom');
     const filterDateTo = document.getElementById('filterDateTo');
@@ -1367,11 +1944,11 @@ async function performSearch() {
     const searchParams = {
         query: searchInput.value.trim(),
         sort_by: sortBy.value,
-        sort_order: sortOrder.value,
-        folder_id: filterFolder.value,
-        date_from: filterDateFrom.value,
-        date_to: filterDateTo.value,
-        has_image: filterHasImage.value,
+        sort_order: sortOrderBtn ? sortOrderBtn.getAttribute('data-order') : 'desc',
+        folder_id: filterFolder ? filterFolder.value : '',
+        date_from: filterDateFrom ? filterDateFrom.value : '',
+        date_to: filterDateTo ? filterDateTo.value : '',
+        has_image: filterHasImage ? filterHasImage.value : '',
         page: 1,
         per_page: 50
     };
