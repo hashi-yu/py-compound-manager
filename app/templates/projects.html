@@ -1,51 +1,713 @@
 {% extends "base.html" %}
 
-{% block title %}プロジェクト管理 - 化合物データ管理システム{% endblock %}
+{% block title %}Project Management - Compound Management System{% endblock %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>プロジェクト管理</h1>
-    <a href="{{ url_for('main.add_project') }}" class="btn btn-primary">新しいプロジェクトを追加</a>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <span class="text-gradient">Project Management</span>
+            </h1>
+            <p class="page-subtitle">
+                {% if projects %}
+                    Manage your {{ projects|length }} research projects and organize compounds
+                {% else %}
+                    Create and organize your research projects
+                {% endif %}
+            </p>
+        </div>
+        <a href="{{ url_for('main.add_project') }}" class="btn btn-primary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            Create New Project
+        </a>
+    </div>
 </div>
 
 {% if projects %}
-<div class="row">
+<!-- Project Statistics -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z"/>
+                    <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ projects|length }}</div>
+                <div class="stat-label">Total Projects</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ projects|map(attribute='compounds')|map('length')|sum }}</div>
+                <div class="stat-label">Total Compounds</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="stat-icon">
+                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                    <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <div class="stat-number">{{ projects|selectattr('compounds')|list|length }}</div>
+                <div class="stat-label">Active Projects</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Projects Grid -->
+<div class="row g-4">
     {% for project in projects %}
-    <div class="col-md-6 col-lg-4 mb-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">{{ project.name }}</h5>
+    <div class="col-md-6 col-xl-4">
+        <div class="project-card floating-card" data-project-id="{{ project.id }}">
+            <!-- Project Header -->
+            <div class="project-header">
+                <div class="project-avatar">
+                    <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z"/>
+                        <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"/>
+                    </svg>
+                </div>
+                <div class="project-status {{ 'active' if project.compounds else 'empty' }}">
+                    {% if project.compounds %}
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
+                    </svg>
+                    Active
+                    {% else %}
+                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M4 8a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7A.5.5 0 0 1 4 8z"/>
+                    </svg>
+                    Empty
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Project Content -->
+            <div class="project-content">
+                <h3 class="project-title" title="{{ project.name }}">{{ project.name }}</h3>
+                
                 {% if project.description %}
-                <p class="card-text">{{ project.description }}</p>
+                <p class="project-description">{{ project.description }}</p>
+                {% else %}
+                <p class="project-description text-muted">No description provided</p>
                 {% endif %}
-                <p class="text-muted mb-2">化合物: {{ project.compounds|length }}件</p>
-                <p class="text-muted mb-3">作成日: {{ project.created_date.strftime('%Y-%m-%d') }}</p>
-                <div class="d-flex gap-2">
-                    <a href="{{ url_for('main.index', project_id=project.id) }}" class="btn btn-outline-primary btn-sm">化合物表示</a>
-                    <a href="{{ url_for('main.edit_project', project_id=project.id) }}" class="btn btn-outline-secondary btn-sm">編集</a>
-                    <button type="button" class="btn btn-outline-danger btn-sm" onclick="deleteProject({{ project.id }}, '{{ project.name }}')">削除</button>
+
+                <!-- Project Metrics -->
+                <div class="project-metrics">
+                    <div class="metric">
+                        <div class="metric-icon">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-number">{{ project.compounds|length }}</div>
+                            <div class="metric-label">Compounds</div>
+                        </div>
+                    </div>
+                    
+                    <div class="metric">
+                        <div class="metric-icon">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z"/>
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z"/>
+                            </svg>
+                        </div>
+                        <div class="metric-content">
+                            <div class="metric-number">{{ (project.created_date.strftime('%Y-%m-%d') if project.created_date else 'N/A') }}</div>
+                            <div class="metric-label">Created</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Actions -->
+            <div class="project-actions">
+                <a href="{{ url_for('main.index', project_id=project.id) }}" 
+                   class="btn btn-outline-primary btn-sm" 
+                   title="View compounds in this project">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                        <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                    </svg>
+                    View ({{ project.compounds|length }})
+                </a>
+                
+                <div class="btn-group">
+                    <a href="{{ url_for('main.edit_project', project_id=project.id) }}" 
+                       class="btn btn-outline-secondary btn-sm" 
+                       title="Edit project details">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L8.5 11.207l-3 1a.5.5 0 0 1-.644-.644l1-3L13.207.854a.5.5 0 0 1 .293-.208z"/>
+                            <path d="M13.207 1.854L8.5 6.561l1.854 1.854 4.707-4.707L13.207 1.854z"/>
+                            <path d="M10.5 8.5L8.707 6.707l-4.561 4.561-.146.5.5-.146L9.061 8.061z"/>
+                        </svg>
+                        Edit
+                    </a>
+                    
+                    <button type="button" 
+                            class="btn btn-outline-danger btn-sm" 
+                            onclick="deleteProject({{ project.id }}, '{{ project.name }}', {{ project.compounds|length }})"
+                            title="Delete project">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                            <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                        </svg>
+                        Delete
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     {% endfor %}
 </div>
+
+<!-- Quick Actions -->
+<div class="quick-actions-card mt-4">
+    <div class="card-header">
+        <h5 class="card-title mb-0 d-flex align-items-center">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+            </svg>
+            Quick Actions
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('main.add_project') }}" class="quick-action-btn">
+                    <div class="quick-action-icon">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">Create Project</div>
+                        <div class="quick-action-subtitle">Start a new research project</div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('main.add_compound') }}" class="quick-action-btn">
+                    <div class="quick-action-icon">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+                        </svg>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">Add Compound</div>
+                        <div class="quick-action-subtitle">Register a new compound</div>
+                    </div>
+                </a>
+            </div>
+            
+            <div class="col-md-4">
+                <a href="{{ url_for('main.index') }}" class="quick-action-btn">
+                    <div class="quick-action-icon">
+                        <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M1 2.5A1.5 1.5 0 0 1 2.5 1h3A1.5 1.5 0 0 1 7 2.5v3A1.5 1.5 0 0 1 5.5 7h-3A1.5 1.5 0 0 1 1 5.5v-3zM2.5 2a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 1h3A1.5 1.5 0 0 1 15 2.5v3A1.5 1.5 0 0 1 13.5 7h-3A1.5 1.5 0 0 1 9 5.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zM1 10.5A1.5 1.5 0 0 1 2.5 9h3A1.5 1.5 0 0 1 7 10.5v3A1.5 1.5 0 0 1 5.5 15h-3A1.5 1.5 0 0 1 1 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3zm6.5.5A1.5 1.5 0 0 1 10.5 9h3a1.5 1.5 0 0 1 1.5 1.5v3a1.5 1.5 0 0 1-1.5 1.5h-3A1.5 1.5 0 0 1 9 13.5v-3zm1.5-.5a.5.5 0 0 0-.5.5v3a.5.5 0 0 0 .5.5h3a.5.5 0 0 0 .5-.5v-3a.5.5 0 0 0-.5-.5h-3z"/>
+                        </svg>
+                    </div>
+                    <div class="quick-action-content">
+                        <div class="quick-action-title">View All Compounds</div>
+                        <div class="quick-action-subtitle">Browse compound database</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% else %}
-<div class="text-center mt-5">
-    <h4 class="text-muted">プロジェクトが登録されていません</h4>
-    <a href="{{ url_for('main.add_project') }}" class="btn btn-primary mt-3">最初のプロジェクトを追加</a>
+<!-- Empty State -->
+<div class="empty-projects-state">
+    <div class="empty-icon">
+        <svg width="80" height="80" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M2.5 3A1.5 1.5 0 0 0 1 4.5v.793c.026.009.051.02.076.032L7.674 8.51c.206.1.446.1.652 0l6.598-3.185A.755.755 0 0 1 15 5.293V4.5A1.5 1.5 0 0 0 13.5 3h-11Z"/>
+            <path d="M15 6.954 8.978 9.86a2.25 2.25 0 0 1-1.956 0L1 6.954V11.5A1.5 1.5 0 0 0 2.5 13h11a1.5 1.5 0 0 0 1.5-1.5V6.954Z"/>
+        </svg>
+    </div>
+    <h3 class="empty-title">No Projects Yet</h3>
+    <p class="empty-description">
+        Projects help you organize your compounds and research.<br>
+        Create your first project to get started.
+    </p>
+    <div class="empty-actions">
+        <a href="{{ url_for('main.add_project') }}" class="btn btn-primary btn-lg">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+            </svg>
+            Create Your First Project
+        </a>
+        <a href="{{ url_for('main.add_compound') }}" class="btn btn-outline-secondary btn-lg">
+            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+            </svg>
+            Add Compound Instead
+        </a>
+    </div>
 </div>
 {% endif %}
 
+<style>
+/* Enhanced styling for projects page */
+.stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-lg);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    transition: var(--transition-smooth);
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+    border-color: var(--gray-300);
+}
+
+.stat-icon {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-blue);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+
+.stat-number {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--gray-900);
+    line-height: 1;
+}
+
+.stat-label {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.project-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    transition: var(--transition-smooth);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+    border-color: var(--gray-300);
+}
+
+.project-header {
+    background: linear-gradient(135deg, var(--gray-50), var(--white));
+    padding: var(--spacing-lg);
+    border-bottom: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.project-avatar {
+    width: 48px;
+    height: 48px;
+    background: var(--accent-blue);
+    border-radius: var(--radius-lg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+}
+
+.project-status {
+    padding: var(--spacing-xs) var(--spacing-sm);
+    border-radius: var(--radius-lg);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.project-status.active {
+    background: #e8f5e8;
+    color: #2e7d32;
+}
+
+.project-status.empty {
+    background: var(--gray-100);
+    color: var(--gray-600);
+}
+
+.project-content {
+    padding: var(--spacing-lg);
+    flex-grow: 1;
+}
+
+.project-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--spacing-sm);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.project-description {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    margin-bottom: var(--spacing-lg);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.project-metrics {
+    display: flex;
+    gap: var(--spacing-lg);
+}
+
+.metric {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+}
+
+.metric-icon {
+    color: var(--gray-500);
+    flex-shrink: 0;
+}
+
+.metric-number {
+    font-weight: 600;
+    color: var(--gray-900);
+    font-size: 0.875rem;
+}
+
+.metric-label {
+    color: var(--gray-600);
+    font-size: 0.75rem;
+}
+
+.project-actions {
+    padding: var(--spacing-lg);
+    background: var(--gray-50);
+    border-top: 1px solid var(--gray-200);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--spacing-sm);
+}
+
+.quick-actions-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-actions-card .card-header {
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+    padding: var(--spacing-lg);
+}
+
+.quick-action-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-lg);
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    color: inherit;
+    transition: var(--transition-smooth);
+    height: 100%;
+}
+
+.quick-action-btn:hover {
+    background: var(--blue-50);
+    border-color: var(--accent-blue);
+    color: var(--accent-blue);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-sm);
+}
+
+.quick-action-icon {
+    width: 40px;
+    height: 40px;
+    background: var(--gray-100);
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--gray-600);
+    flex-shrink: 0;
+    transition: var(--transition-smooth);
+}
+
+.quick-action-btn:hover .quick-action-icon {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.quick-action-title {
+    font-weight: 600;
+    color: var(--gray-900);
+    margin-bottom: var(--spacing-xs);
+}
+
+.quick-action-subtitle {
+    color: var(--gray-600);
+    font-size: 0.875rem;
+}
+
+.empty-projects-state {
+    text-align: center;
+    padding: var(--spacing-3xl) var(--spacing-lg);
+    color: var(--gray-500);
+}
+
+.empty-icon {
+    margin-bottom: var(--spacing-xl);
+    color: var(--gray-400);
+}
+
+.empty-title {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--gray-700);
+    margin-bottom: var(--spacing-md);
+}
+
+.empty-description {
+    font-size: 1.125rem;
+    line-height: 1.6;
+    margin-bottom: var(--spacing-xl);
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.empty-actions {
+    display: flex;
+    gap: var(--spacing-md);
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .page-header .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--spacing-md);
+    }
+    
+    .page-header .btn {
+        align-self: stretch;
+    }
+    
+    .project-metrics {
+        flex-direction: column;
+        gap: var(--spacing-sm);
+    }
+    
+    .project-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .empty-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .empty-actions .btn {
+        min-width: 250px;
+    }
+}
+
+/* Animation for project cards */
+.project-card {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Stagger animation for multiple cards */
+.project-card:nth-child(1) { animation-delay: 0.1s; }
+.project-card:nth-child(2) { animation-delay: 0.2s; }
+.project-card:nth-child(3) { animation-delay: 0.3s; }
+.project-card:nth-child(4) { animation-delay: 0.4s; }
+.project-card:nth-child(5) { animation-delay: 0.5s; }
+.project-card:nth-child(6) { animation-delay: 0.6s; }
+</style>
+
 <script>
-function deleteProject(projectId, projectName) {
-    if (confirm(`プロジェクト「${projectName}」を削除しますか？\n\n※関連する化合物は未分類になります。`)) {
+// Enhanced project deletion with detailed confirmation
+function deleteProject(projectId, projectName, compoundCount) {
+    let confirmMessage = `Are you sure you want to delete the project "${projectName}"?\n\n`;
+    confirmMessage += "⚠️ This action cannot be undone.\n";
+    
+    if (compoundCount > 0) {
+        confirmMessage += `⚠️ This project contains ${compoundCount} compound${compoundCount > 1 ? 's' : ''}.\n`;
+        confirmMessage += "⚠️ All compounds will become unclassified (not deleted).\n";
+    }
+    
+    confirmMessage += "\nType the project name to confirm:";
+    
+    const userInput = prompt(confirmMessage);
+    if (userInput === projectName) {
+        // Show loading state
+        const deleteBtn = event.target;
+        const originalContent = deleteBtn.innerHTML;
+        deleteBtn.innerHTML = `
+            <div class="spinner-border spinner-border-sm" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        `;
+        deleteBtn.disabled = true;
+        
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/delete_project/' + projectId;
         document.body.appendChild(form);
         form.submit();
+    } else if (userInput !== null) {
+        alert('Project name does not match. Deletion cancelled.');
     }
 }
+
+// Enhanced card interactions
+document.addEventListener('DOMContentLoaded', function() {
+    // Add hover effects to project cards
+    const projectCards = document.querySelectorAll('.project-card');
+    projectCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-4px)';
+        });
+        
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Auto-hide alerts
+    const alerts = document.querySelectorAll('.alert');
+    alerts.forEach(function(alert) {
+        setTimeout(function() {
+            if (alert.parentNode) {
+                alert.style.transition = 'opacity 0.5s';
+                alert.style.opacity = '0';
+                setTimeout(function() {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 500);
+            }
+        }, 5000);
+    });
+});
+
+// Keyboard shortcuts
+document.addEventListener('keydown', function(e) {
+    if (e.ctrlKey || e.metaKey) {
+        switch(e.key) {
+            case 'n':
+                e.preventDefault();
+                window.location.href = '{{ url_for("main.add_project") }}';
+                break;
+            case 'c':
+                e.preventDefault();
+                window.location.href = '{{ url_for("main.add_compound") }}';
+                break;
+        }
+    }
+});
+
+// Search functionality (if needed in future)
+function filterProjects(searchTerm) {
+    const projectCards = document.querySelectorAll('.project-card');
+    const lowerSearchTerm = searchTerm.toLowerCase();
+    
+    projectCards.forEach(card => {
+        const projectTitle = card.querySelector('.project-title').textContent.toLowerCase();
+        const projectDescription = card.querySelector('.project-description').textContent.toLowerCase();
+        
+        if (projectTitle.includes(lowerSearchTerm) || projectDescription.includes(lowerSearchTerm)) {
+            card.style.display = 'block';
+            card.classList.add('fade-in');
+        } else {
+            card.style.display = 'none';
+            card.classList.remove('fade-in');
+        }
+    });
+}
+
+// Performance optimization: Lazy load project metrics
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+        }
+    });
+});
+
+document.querySelectorAll('.project-card').forEach(card => {
+    observer.observe(card);
+});
 </script>
 {% endblock %}

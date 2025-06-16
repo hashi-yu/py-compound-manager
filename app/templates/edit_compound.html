@@ -1,81 +1,363 @@
 {% extends "base.html" %}
 
-{% block title %}{{ compound.name }}の編集 - 化合物データ管理システム{% endblock %}
+{% block title %}Edit {{ compound.name }} - Compound Management System{% endblock %}
 
 {% block content %}
-<h1>{{ compound.name }}の編集</h1>
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <span class="text-gradient">Edit Compound</span>
+            </h1>
+            <p class="page-subtitle">Update information for {{ compound.name }}</p>
+        </div>
+        <a href="{{ url_for('main.compound_detail', compound_id=compound.id) }}" class="btn btn-outline-secondary">
+            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 6L8 12.5 4.5 6h7z"/>
+            </svg>
+            Back to Details
+        </a>
+    </div>
+</div>
 
-<form method="POST" enctype="multipart/form-data">
-    <div class="row">
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label for="name" class="form-label">化合物名 *</label>
-                <input type="text" class="form-control" id="name" name="name" value="{{ compound.name }}" required>
-            </div>
-            
-            <div class="mb-3">
-                <label for="molecular_formula" class="form-label">分子式</label>
-                <input type="text" class="form-control" id="molecular_formula" name="molecular_formula" 
-                       value="{{ compound.molecular_formula or '' }}" placeholder="例: C6H6">
-            </div>
-            
-            <div class="mb-3">
-                <label for="molecular_weight" class="form-label">分子量</label>
-                <input type="number" step="0.01" class="form-control" id="molecular_weight" name="molecular_weight" 
-                       value="{{ compound.molecular_weight or '' }}" placeholder="例: 78.11">
-            </div>
-            
-            <div class="mb-3">
-                <label for="project_id" class="form-label">プロジェクト</label>
-                <select class="form-select" id="project_id" name="project_id">
-                    <option value="">プロジェクトを選択（任意）</option>
-                    {% for project in projects %}
-                    <option value="{{ project.id }}" {% if compound.project_id == project.id %}selected{% endif %}>
-                        {{ project.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-        </div>
-        
-        <div class="col-md-6">
-            <div class="mb-3">
-                <label class="form-label">現在の構造式画像</label>
-                {% if compound.structure_image %}
-                <div class="mb-2">
-                    <img src="{{ url_for('main.structure_image', filename=compound.structure_image.split('/')[-1]) }}" 
-                         class="img-thumbnail" style="max-height: 200px;" alt="構造式">
+<!-- Main Form -->
+<div class="card floating-card">
+    <div class="card-body">
+        <form method="POST" enctype="multipart/form-data">
+            <div class="row g-4">
+                <!-- Left Column: Basic Information -->
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-3 d-flex align-items-center">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                            </svg>
+                            Basic Information
+                        </h5>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="name" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M12.17 9.53c2.307-2.592 3.278-4.684 3.641-6.218.21-.887.214-1.58.16-2.065a3.578 3.578 0 0 0-.108-.563 2.22 2.22 0 0 0-.078-.23V.453c0-.059.001-.098.001-.142.5-.655.934-.98.934-.98s-.301.621-.809 1.332c-.138.193-.264.377-.376.544-.16.242-.301.474-.427.694a12.797 12.797 0 0 0-.756 1.508c-.17.409-.492.804-1.158 1.392-.824.73-1.682 1.268-2.572 1.61-.875.334-1.777.521-2.684.668-1.795.292-3.6.346-5.39.206-.397-.031-.8-.074-1.202-.123a29.68 29.68 0 0 1-1.21-.17C.655 7.82.466 7.732.466 7.732s.319.041.857.095c.564.056 1.334.118 2.226.181.938.067 2.017.13 3.132.179 1.095.048 2.226.076 3.363.076.567 0 1.135-.009 1.701-.027z"/>
+                            </svg>
+                            Compound Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" value="{{ compound.name }}" required 
+                               placeholder="Enter compound name">
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-4">
+                            <label for="molecular_formula" class="form-label">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                    <path d="M4 11.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-3-4a.5.5 0 0 1 .5-.5h13a.5.5 0 0 1 0 1h-13a.5.5 0 0 1-.5-.5zm2-4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5z"/>
+                                </svg>
+                                Molecular Formula
+                            </label>
+                            <input type="text" class="form-control" id="molecular_formula" name="molecular_formula" 
+                                   value="{{ compound.molecular_formula or '' }}" placeholder="e.g., C6H6">
+                            <div id="formula-feedback" class="form-text mt-1"></div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-4">
+                            <label for="molecular_weight" class="form-label">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                    <path d="M11.251.068a.5.5 0 0 1 .227.58L9.677 6.5H13a.5.5 0 0 1 .364.843l-8 8.5a.5.5 0 0 1-.842-.49L6.323 9.5H3a.5.5 0 0 1-.364-.843l8-8.5a.5.5 0 0 1 .615-.09z"/>
+                                </svg>
+                                Molecular Weight
+                            </label>
+                            <input type="number" step="0.01" class="form-control" id="molecular_weight" name="molecular_weight" 
+                                   value="{{ compound.molecular_weight or '' }}" placeholder="e.g., 78.11">
+                            <div id="weight-feedback" class="form-text mt-1"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="project_id" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13A1.5 1.5 0 0 0 16 14.5v-13A1.5 1.5 0 0 0 14.5 0h-13zM1 1.5A.5.5 0 0 1 1.5 1h13a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-13z"/>
+                            </svg>
+                            Project
+                        </label>
+                        <select class="form-select" id="project_id" name="project_id">
+                            <option value="">Select Project (Optional)</option>
+                            {% for project in projects %}
+                            <option value="{{ project.id }}" {% if compound.project_id == project.id %}selected{% endif %}>
+                                {{ project.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                            Leave blank if not assigning to a project
+                        </div>
+                    </div>
                 </div>
-                <button type="button" class="btn btn-sm btn-outline-danger mb-2" 
-                        onclick="deleteStructure({{ compound.id }})">画像を削除</button>
-                {% else %}
-                <div class="text-muted mb-2">構造式画像なし</div>
-                {% endif %}
+                
+                <!-- Right Column: Images and Notes -->
+                <div class="col-lg-6">
+                    <div class="mb-4">
+                        <h5 class="text-muted mb-3 d-flex align-items-center">
+                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093L6.52 9.773l-2.292-2.292a.5.5 0 0 0-.63-.062L1.002 9v-6a1 1 0 0 1 1-1h12z"/>
+                            </svg>
+                            Structure & Notes
+                        </h5>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                            </svg>
+                            Current Structure Image
+                        </label>
+                        {% if compound.structure_image %}
+                        <div class="structure-preview-card mb-3">
+                            <div class="structure-preview-image">
+                                <img src="{{ url_for('main.structure_image', filename=compound.structure_image.split('/')[-1]) }}" 
+                                     class="img-fluid rounded" alt="Structure">
+                            </div>
+                            <div class="structure-preview-actions mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-danger" 
+                                        onclick="deleteStructure({{ compound.id }})">
+                                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+                                        <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+                                    </svg>
+                                    Remove Image
+                                </button>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="structure-placeholder mb-3">
+                            <div class="placeholder-text">
+                                <svg width="24" height="24" fill="currentColor" viewBox="0 0 16 16" class="mb-2">
+                                    <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                    <path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/>
+                                </svg>
+                                <div>No structure image</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="structure_image" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                            </svg>
+                            Upload New Structure Image
+                        </label>
+                        <input type="file" class="form-control" id="structure_image" name="structure_image" accept="image/*" onchange="handleImageUpload(this)">
+                        <div class="form-text">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                            </svg>
+                            Supports PNG, JPG, JPEG, GIF formats (max 5MB). Selecting a new image will replace the current one.
+                        </div>
+                        
+                        <!-- Image Preview Area -->
+                        <div id="imagePreviewArea" class="mt-3" style="display: none;">
+                            <div class="image-preview-card">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <span class="small text-muted">
+                                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                        </svg>
+                                        New Image Preview
+                                    </span>
+                                </div>
+                                <img id="imagePreview" src="#" alt="Preview" class="img-fluid rounded">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="notes" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M3 0h10a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-1h1v1a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1H3a1 1 0 0 0-1 1v1H1V2a2 2 0 0 1 2-2z"/>
+                                <path d="M1 5v-.5a.5.5 0 0 1 1 0V5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0V8h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1zm0 3v-.5a.5.5 0 0 1 1 0v.5h.5a.5.5 0 0 1 0 1h-2a.5.5 0 0 1 0-1H1z"/>
+                            </svg>
+                            Notes & Comments
+                        </label>
+                        <textarea class="form-control" id="notes" name="notes" rows="5" 
+                                  placeholder="Enter notes and remarks about the compound&#10;• Synthesis method&#10;• Storage conditions&#10;• Distinctive properties, etc.">{{ compound.notes or '' }}</textarea>
+                    </div>
+                </div>
             </div>
             
-            <div class="mb-3">
-                <label for="structure_image" class="form-label">新しい構造式画像</label>
-                <input type="file" class="form-control" id="structure_image" name="structure_image" accept="image/*">
-                <div class="form-text">新しい画像を選択すると現在の画像が置き換わります</div>
+            <!-- Submit Button Area -->
+            <div class="d-flex gap-3 pt-4 border-top">
+                <button type="submit" class="btn btn-primary">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M2.5 8a5.5 5.5 0 0 1 8.25-4.764.5.5 0 0 0 .5-.866A6.5 6.5 0 1 0 14.5 8a.5.5 0 0 0-1 0 5.5 5.5 0 1 1-11 0z"/>
+                        <path d="M15.354 3.354a.5.5 0 0 0-.708-.708L8 9.293 5.354 6.646a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l7-7z"/>
+                    </svg>
+                    Update Compound
+                </button>
+                <a href="{{ url_for('main.compound_detail', compound_id=compound.id) }}" class="btn btn-outline-secondary">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                    </svg>
+                    Cancel
+                </a>
             </div>
-            
-            <div class="mb-3">
-                <label for="notes" class="form-label">メモ</label>
-                <textarea class="form-control" id="notes" name="notes" rows="4" 
-                          placeholder="化合物に関するメモ">{{ compound.notes or '' }}</textarea>
-            </div>
-        </div>
+        </form>
     </div>
-    
-    <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">更新</button>
-        <a href="{{ url_for('main.compound_detail', compound_id=compound.id) }}" class="btn btn-secondary">キャンセル</a>
-    </div>
-</form>
+</div>
+
+<style>
+/* Enhanced styling for edit compound page */
+.structure-preview-card {
+    background: var(--gray-50);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    transition: var(--transition-smooth);
+}
+
+.structure-preview-card:hover {
+    background: var(--white);
+    border-color: var(--gray-300);
+    box-shadow: var(--shadow-sm);
+}
+
+.structure-preview-image {
+    max-height: 200px;
+    overflow: hidden;
+    border-radius: var(--radius-md);
+    background: var(--white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--gray-200);
+}
+
+.structure-preview-image img {
+    max-height: 180px;
+    object-fit: contain;
+}
+
+.image-preview-card {
+    background: var(--blue-50);
+    border: 2px dashed var(--accent-blue);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    margin-top: var(--spacing-sm);
+}
+
+.image-preview-card img {
+    max-height: 150px;
+    border-radius: var(--radius-md);
+}
+
+/* Enhanced form feedback */
+#formula-feedback,
+#weight-feedback {
+    min-height: 1rem;
+    font-size: 0.875rem;
+    transition: var(--transition-smooth);
+}
+
+#formula-feedback.success {
+    color: var(--accent-orange);
+}
+
+#formula-feedback.error {
+    color: #dc2626;
+}
+
+#formula-feedback.warning {
+    color: var(--accent-yellow);
+}
+
+#weight-feedback.success {
+    color: var(--accent-orange);
+}
+
+#weight-feedback.calculating {
+    color: var(--accent-light-blue);
+}
+
+/* Enhanced input styling */
+.form-control.calculating {
+    background-image: linear-gradient(90deg, var(--gray-100) 25%, transparent 25%);
+    background-size: 20px 20px;
+    animation: calculating-bg 1s linear infinite;
+}
+
+@keyframes calculating-bg {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 0; }
+}
+
+/* Floating button effects */
+.btn {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    transition: width 0.3s, height 0.3s;
+}
+
+.btn:hover::before {
+    width: 300px;
+    height: 300px;
+}
+</style>
 
 <script>
+// Enhanced image upload handling
+function handleImageUpload(input) {
+    const file = input.files[0];
+    if (file) {
+        // File size check (5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('File size exceeds 5MB. Please select a smaller image.');
+            input.value = '';
+            return;
+        }
+        
+        // Display image preview
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('imagePreview');
+            const previewArea = document.getElementById('imagePreviewArea');
+            
+            preview.src = e.target.result;
+            previewArea.style.display = 'block';
+            
+            // Add animation
+            previewArea.classList.add('fade-in');
+        };
+        reader.readAsDataURL(file);
+    }
+}
+
+// Enhanced structure deletion with confirmation
 function deleteStructure(compoundId) {
-    if (confirm('構造式画像を削除しますか？')) {
+    if (confirm('Are you sure you want to delete the structure image?\n\nThis action cannot be undone.')) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '/delete_structure/' + compoundId;
@@ -84,36 +366,41 @@ function deleteStructure(compoundId) {
     }
 }
 
-// 高精度分子式変更時の分子量自動計算
+// Enhanced molecular weight calculation when formula changes
 document.getElementById('molecular_formula').addEventListener('input', function() {
     const formula = this.value.trim();
     
-    // リアルタイム検証
+    // Real-time validation
     validateFormulaRealtime(formula);
     
-    // 分子量計算（少し遅延させてAPIコール数を削減）
+    // Molecular weight calculation (with slight delay to reduce API calls)
     clearTimeout(this.calculationTimeout);
     this.calculationTimeout = setTimeout(() => {
         if (formula) {
             calculateHighPrecisionMolecularWeight(formula);
         } else {
-            // 分子式が空の場合、分子量もクリア
+            // Clear molecular weight when formula is empty
             const weightInput = document.getElementById('molecular_weight');
+            const weightFeedback = document.getElementById('weight-feedback');
             weightInput.value = '';
-            weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
+            weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger', 'calculating');
             weightInput.title = '';
-            weightInput.placeholder = '例: 78.11';
+            weightInput.placeholder = 'e.g., 78.11';
+            weightFeedback.textContent = '';
+            weightFeedback.className = 'form-text mt-1';
         }
     }, 500);
 });
 
-// リアルタイム分子式検証
+// Enhanced real-time formula validation
 async function validateFormulaRealtime(formula) {
     const formulaInput = document.getElementById('molecular_formula');
-    const weightInput = document.getElementById('molecular_weight');
+    const formulaFeedback = document.getElementById('formula-feedback');
     
     if (!formula) {
         formulaInput.classList.remove('border-success', 'border-warning', 'border-danger');
+        formulaFeedback.textContent = '';
+        formulaFeedback.className = 'form-text mt-1';
         return;
     }
     
@@ -132,29 +419,44 @@ async function validateFormulaRealtime(formula) {
                 if (result.is_valid) {
                     formulaInput.classList.remove('border-warning', 'border-danger');
                     formulaInput.classList.add('border-success');
+                    formulaFeedback.textContent = '✓ Valid molecular formula';
+                    formulaFeedback.className = 'form-text mt-1 success';
                 } else {
                     formulaInput.classList.remove('border-success', 'border-warning');
                     formulaInput.classList.add('border-danger');
-                    formulaInput.title = result.error_message || '無効な分子式';
-                    weightInput.value = ''; // 無効な場合は分子量をクリア
+                    formulaInput.title = result.error_message || 'Invalid molecular formula';
+                    formulaFeedback.textContent = '✗ ' + (result.error_message || 'Invalid molecular formula');
+                    formulaFeedback.className = 'form-text mt-1 error';
+                    
+                    // Clear molecular weight for invalid formulas
+                    const weightInput = document.getElementById('molecular_weight');
+                    const weightFeedback = document.getElementById('weight-feedback');
+                    weightInput.value = '';
+                    weightFeedback.textContent = '';
+                    weightFeedback.className = 'form-text mt-1';
                 }
             }
         }
     } catch (error) {
-        console.error('分子式検証エラー:', error);
+        console.error('Formula validation error:', error);
         formulaInput.classList.remove('border-success', 'border-warning');
         formulaInput.classList.add('border-warning');
+        formulaFeedback.textContent = '⚠ Validation service unavailable';
+        formulaFeedback.className = 'form-text mt-1 warning';
     }
 }
 
-// 高精度分子量計算
+// Enhanced high-precision molecular weight calculation
 async function calculateHighPrecisionMolecularWeight(formula) {
     const weightInput = document.getElementById('molecular_weight');
-    const formulaInput = document.getElementById('molecular_formula');
+    const weightFeedback = document.getElementById('weight-feedback');
     
-    // 計算中表示
-    weightInput.placeholder = '計算中...';
+    // Show calculating state
+    weightInput.placeholder = 'Calculating...';
     weightInput.disabled = true;
+    weightInput.classList.add('calculating');
+    weightFeedback.textContent = '🔄 Calculating molecular weight...';
+    weightFeedback.className = 'form-text mt-1 calculating';
     
     try {
         const response = await fetch('/api/calculate-molecular-weight', {
@@ -168,71 +470,79 @@ async function calculateHighPrecisionMolecularWeight(formula) {
         if (response.ok) {
             const result = await response.json();
             if (result.success && result.molecular_weight) {
-                // 常に最新の計算結果で更新
+                // Always update with latest calculation result
                 weightInput.value = result.molecular_weight;
                 
-                // 古いスタイルをクリア
+                // Clear old styles
                 weightInput.classList.remove('border-success', 'border-info', 'border-warning', 'border-danger');
                 
-                // 精度に応じたフィードバック
+                // Feedback based on precision
                 if (result.confidence >= 0.95) {
                     weightInput.classList.add('border-success');
-                    weightInput.title = `高精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
-                                      `データソース: ${result.source}\n` +
-                                      `計算方法: ${result.method}\n` +
-                                      `精度: 小数点${result.precision}桁`;
+                    weightInput.title = `High precision calculation (${result.calculation_info?.confidence_percent || 95}% confidence)\nData source: ${result.source}\nCalculation method: ${result.method}\nPrecision: ${result.precision} decimal places`;
+                    weightFeedback.textContent = `✓ High precision: ${result.molecular_weight} (${result.calculation_info?.confidence_percent || 95}% confidence)`;
+                    weightFeedback.className = 'form-text mt-1 success';
                 } else if (result.confidence >= 0.85) {
                     weightInput.classList.add('border-info');
-                    weightInput.title = `標準精度計算 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
-                                      `データソース: ${result.source}`;
+                    weightInput.title = `Standard precision calculation (${result.calculation_info?.confidence_percent || 85}% confidence)\nData source: ${result.source}`;
+                    weightFeedback.textContent = `ℹ Standard precision: ${result.molecular_weight} (${result.calculation_info?.confidence_percent || 85}% confidence)`;
+                    weightFeedback.className = 'form-text mt-1';
                 } else {
                     weightInput.classList.add('border-warning');
-                    weightInput.title = `推定値 (${result.calculation_info.confidence_percent}% 信頼度)\n` +
-                                      `手動で確認することをお勧めします`;
+                    weightInput.title = `Estimated value (${result.calculation_info?.confidence_percent || 70}% confidence)\nRecommend manual verification`;
+                    weightFeedback.textContent = `⚠ Estimated: ${result.molecular_weight} (${result.calculation_info?.confidence_percent || 70}% confidence) - Please verify manually`;
+                    weightFeedback.className = 'form-text mt-1 warning';
                 }
                 
-                // 計算情報を表示（デバッグ用）
-                console.log('分子量計算結果:', result);
+                // Log calculation info for debugging
+                console.log('Molecular weight calculation result:', result);
                 
-                // フィードバックを一定時間後に削除
+                // Remove feedback styling after 3 seconds
                 setTimeout(() => {
                     weightInput.classList.remove('border-success', 'border-info', 'border-warning');
+                    weightFeedback.textContent = '';
+                    weightFeedback.className = 'form-text mt-1';
                 }, 3000);
                 
             } else {
-                // 計算失敗の場合
+                // Calculation failed
                 weightInput.value = '';
-                weightInput.placeholder = '手動入力してください';
-                weightInput.title = result.error || '分子量を計算できませんでした';
+                weightInput.placeholder = 'Please enter manually';
+                weightInput.title = result.error || 'Could not calculate molecular weight';
                 weightInput.classList.remove('border-success', 'border-info', 'border-warning');
                 weightInput.classList.add('border-danger');
+                weightFeedback.textContent = '✗ ' + (result.error || 'Could not calculate molecular weight');
+                weightFeedback.className = 'form-text mt-1 error';
             }
         }
     } catch (error) {
-        console.error('高精度分子量計算エラー:', error);
+        console.error('High-precision molecular weight calculation error:', error);
         weightInput.value = '';
-        weightInput.placeholder = '手動入力してください';
-        weightInput.title = '計算サービスに接続できませんでした';
+        weightInput.placeholder = 'Please enter manually';
+        weightInput.title = 'Could not connect to calculation service';
         weightInput.classList.remove('border-success', 'border-info', 'border-warning');
         weightInput.classList.add('border-warning');
+        weightFeedback.textContent = '⚠ Calculation service unavailable - Please enter manually';
+        weightFeedback.className = 'form-text mt-1 warning';
     } finally {
         weightInput.disabled = false;
+        weightInput.classList.remove('calculating');
         if (!weightInput.value) {
-            weightInput.placeholder = '例: 78.11';
+            weightInput.placeholder = 'e.g., 78.11';
         }
     }
 }
 
-// ページロード時に計算システム情報を取得
+// Get calculation system info on page load
 document.addEventListener('DOMContentLoaded', function() {
     fetch('/api/calculation-info')
         .then(response => response.json())
         .then(result => {
             if (result.success) {
-                console.log('分子量計算システム情報:', result.info);
+                console.log('Molecular weight calculation system info:', result.info);
             }
         })
-        .catch(error => console.error('計算システム情報取得エラー:', error));
+        .catch(error => console.error('Calculation system info retrieval error:', error));
 });
 </script>
 {% endblock %}

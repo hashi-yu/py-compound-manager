@@ -1,24 +1,24 @@
 {% extends "base.html" %}
 
-{% block title %}プロジェクト追加 - 化合物データ管理システム{% endblock %}
+{% block title %}Add Project - Compound Management System{% endblock %}
 
 {% block content %}
-<h1>新しいプロジェクトの追加</h1>
+<h1>Add New Project</h1>
 
 <form method="POST">
     <div class="mb-3">
-        <label for="name" class="form-label">プロジェクト名 *</label>
+        <label for="name" class="form-label">Project Name *</label>
         <input type="text" class="form-control" id="name" name="name" required>
     </div>
     
     <div class="mb-3">
-        <label for="description" class="form-label">説明</label>
-        <textarea class="form-control" id="description" name="description" rows="4" placeholder="プロジェクトの説明"></textarea>
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="4" placeholder="Project description"></textarea>
     </div>
     
     <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">プロジェクトを追加</button>
-        <a href="{{ url_for('main.projects') }}" class="btn btn-secondary">キャンセル</a>
+        <button type="submit" class="btn btn-primary">Add Project</button>
+        <a href="{{ url_for('main.projects') }}" class="btn btn-secondary">Cancel</a>
     </div>
 </form>
 {% endblock %}
