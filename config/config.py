@@ -9,4 +9,4 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), 'app', 'uploads')
     MAX_CONTENT_LENGTH = 16 * 1024 * 1024  # 16MB max file size
-    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'txt', 'csv', 'jdx', 'dx'}
+    ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'pdf', 'txt', 'csv', 'jdx', 'dx', 'bin', 'dat', 'raw', 'spc', 'bz2', 'gz', 'zip', 'tar', 'h5', 'hdf5', 'npz', 'npy', 'mat', 'xlsx', 'xls', 'docx', 'doc', 'ppt', 'pptx', 'fid', 'log', 'propcar', 'text'}

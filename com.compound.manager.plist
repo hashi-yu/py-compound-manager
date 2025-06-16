@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.compound.manager</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/Hashimoto/py-compound-manager/start.command</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/Users/Hashimoto/py-compound-manager/logs/compound-manager.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/Hashimoto/py-compound-manager/logs/compound-manager-error.log</string>
+    <key>WorkingDirectory</key>
+    <string>/Users/Hashimoto/py-compound-manager</string>
+</dict>
+</plist>

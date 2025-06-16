@@ -16,8 +16,14 @@ main_bp = Blueprint('main', __name__)
 
 def allowed_file(filename):
     from flask import current_app
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+    
+    # 拡張子のない特定のファイル名を許可
+    allowed_no_extension = {'fid', 'log', 'propcar'}
+    if '.' not in filename:
+        return filename.lower() in allowed_no_extension
+    
+    # 拡張子がある場合の従来の処理
+    return filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
 @main_bp.route('/')
 def index():
