@@ -1,6 +1,6 @@
-# 🧪 Compound Management System v2.0
+# 🧪 Compound Management System v2.1
 
-> A modern, Apple-inspired chemical compound database system with advanced molecular weight calculations and project management capabilities.
+> A modern, Apple-inspired chemical compound database system with advanced molecular weight calculations, spectral data management, and automated deployment capabilities.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-green.svg)
@@ -14,6 +14,7 @@
 - Automatic molecular weight calculation
 - Real-time molecular formula validation
 - Notes and comments system
+- Spectral data file management
 
 ### 📊 **Project Organization**
 - Group compounds by research projects
@@ -30,8 +31,10 @@
 ### ⚡ **Advanced Features**
 - High-precision molecular weight calculation
 - Image preview and management
-- Data backup and restore
-- Multi-format file support
+- Comprehensive file format support (50+ types)
+- Extension-less file support (fid, log, propcar)
+- User feedback system
+- macOS auto-startup integration
 
 ## 🚀 Quick Start
 
@@ -43,6 +46,20 @@
 4. **Access**: http://localhost:8081
 
 **One-click setup** - All dependencies installed automatically!
+
+### 🔄 Auto-Start Setup (macOS)
+
+**Set up automatic startup at login:**
+```bash
+./setup-autostart.command
+```
+
+**Disable auto-startup:**
+```bash
+./disable-autostart.command
+```
+
+**Access via bookmark:** Add `http://localhost:8081` to your browser bookmarks for instant access!
 
 ## 📖 Detailed Installation
 
@@ -101,6 +118,13 @@ PORT=8081
 4. Assign to project (optional)
 5. Add notes and save
 
+### Uploading Spectral Data
+1. Open any compound detail page
+2. Click **"Upload Data"**
+3. Select data type (NMR, IR, MS, etc.)
+4. Upload file (supports 50+ formats including fid, log, propcar)
+5. Add optional notes
+
 ### Managing Projects
 1. Navigate to **"Projects"**
 2. Create new projects or edit existing ones
@@ -118,17 +142,21 @@ PORT=8081
 ```
 py-compound-manager/
 ├── app/                    # Main application
-│   ├── models/            # Database models (Compound, Project)
+│   ├── models/            # Database models (Compound, Project, SpectralData)
 │   ├── routes/            # URL routes and API endpoints
 │   ├── templates/         # HTML templates
 │   ├── static/           # CSS, JavaScript, images
 │   └── uploads/          # User uploaded files
+│       ├── data/         # Spectral data files
+│       └── structures/   # Molecular structure images
 ├── config/               # Configuration files
 ├── instance/             # Database and instance files
+│   └── feedback/         # User feedback storage
 ├── requirements.txt      # Python dependencies
 ├── run.py               # Application entry point
-├── setup.sh             # Setup script (Unix)
-├── setup_windows.bat    # Setup script (Windows)
+├── start.command         # One-click launcher (macOS/Linux)
+├── setup-autostart.command    # Auto-startup setup (macOS)
+├── disable-autostart.command  # Disable auto-startup (macOS)
 └── README.md            # This file
 ```
 
@@ -145,9 +173,16 @@ py-compound-manager/
 - `POST /add_project` - Add new project
 - `POST /edit_project/<id>` - Edit project
 
+### Spectral Data
+- `POST /upload_data/<compound_id>` - Upload spectral data
+- `GET /download/<data_id>` - Download data file
+- `POST /delete_spectral_data/<data_id>` - Delete data file
+
 ### API
 - `POST /api/calculate-molecular-weight` - Calculate molecular weight
 - `POST /api/validate-molecular-formula` - Validate formula
+- `POST /api/feedback` - Submit user feedback
+- `GET /admin/feedback` - View feedback (admin)
 
 ## 🚀 Deployment
 
@@ -210,12 +245,29 @@ pip install --upgrade -r requirements.txt
 
 ## 🎯 Roadmap
 
+- [x] Spectral data management
+- [x] Multi-format file support (50+ types)
+- [x] Auto-startup system (macOS)
+- [x] User feedback system
 - [ ] Advanced search and filtering
 - [ ] Data export to multiple formats
 - [ ] Integration with chemical databases
 - [ ] Collaborative features
 - [ ] Mobile application
 - [ ] Advanced molecular visualization
+
+## 📂 Supported File Formats
+
+### Spectral Data
+- **NMR Data:** fid (extension-less), .jdx, .dx
+- **Binary Data:** .bin, .dat, .raw, .spc
+- **Text Data:** .txt, .csv, .log, propcar, text
+- **Archives:** .zip, .tar, .gz, .bz2
+- **Scientific:** .h5, .hdf5, .npz, .npy, .mat
+- **Documents:** .pdf, .xlsx, .xls, .docx, .doc, .ppt, .pptx
+
+### Structure Images
+- **Images:** .png, .jpg, .jpeg, .gif
 
 ## 🏆 Acknowledgments
 
