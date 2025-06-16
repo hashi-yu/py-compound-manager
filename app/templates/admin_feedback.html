@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}Feedback Management - Compound Management System{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <h1 class="page-title">
+                <span class="text-gradient">Feedback Management</span>
+            </h1>
+            <p class="page-subtitle">View and manage user feedback submissions</p>
+        </div>
+        <div class="d-flex gap-2">
+            <span class="badge bg-primary">{{ feedbacks|length }} Total</span>
+            <a href="{{ url_for('main.index') }}" class="btn btn-outline-secondary">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                    <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zm3.5 6L8 12.5 4.5 6h7z"/>
+                </svg>
+                Back to Home
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if feedbacks %}
+<!-- Feedback Statistics -->
+<div class="row g-3 mb-4">
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('type', 'equalto', 'bug')|list|length }}</div>
+                <div class="stat-label">🐛 Bugs</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('type', 'equalto', 'feature')|list|length }}</div>
+                <div class="stat-label">💡 Features</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('type', 'equalto', 'improvement')|list|length }}</div>
+                <div class="stat-label">⚡ Improvements</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('type', 'equalto', 'usability')|list|length }}</div>
+                <div class="stat-label">🎯 Usability</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('type', 'equalto', 'other')|list|length }}</div>
+                <div class="stat-label">💬 General</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-2">
+        <div class="stat-card">
+            <div class="stat-content text-center">
+                <div class="stat-number">{{ feedbacks|selectattr('user_email')|list|length }}</div>
+                <div class="stat-label">📧 With Email</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback List -->
+<div class="row">
+    {% for feedback in feedbacks %}
+    <div class="col-12 mb-4">
+        <div class="card feedback-card">
+            <div class="card-header">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <span class="feedback-type-badge feedback-type-{{ feedback.type }}">
+                            {% if feedback.type == 'bug' %}🐛 Bug Report
+                            {% elif feedback.type == 'feature' %}💡 Feature Request
+                            {% elif feedback.type == 'improvement' %}⚡ Improvement
+                            {% elif feedback.type == 'usability' %}🎯 Usability
+                            {% else %}💬 General
+                            {% endif %}
+                        </span>
+                        <h5 class="card-title mb-0 ms-3">{{ feedback.subject }}</h5>
+                    </div>
+                    <div class="text-muted">
+                        <small>{{ feedback.timestamp[:19].replace('T', ' ') }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <h6>Message:</h6>
+                        <div class="feedback-message">{{ feedback.message }}</div>
+                        
+                        {% if feedback.user_email %}
+                        <div class="mt-3">
+                            <h6>Contact:</h6>
+                            <div class="d-flex align-items-center">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                    <path d="M2 2a2 2 0 0 0-2 2v8.01A2 2 0 0 0 2 14h5.5a.5.5 0 0 0 0-1H2a1 1 0 0 1-1-1V5.383l5.724 3.576a.5.5 0 0 0 .552 0L13 5.383V8.5a.5.5 0 0 0 1 0V4a2 2 0 0 0-2-2H2zm3.53 6.224-3.5-2.25A1 1 0 0 1 2 5h12a1 1 0 0 1 .97.724l-3.5 2.25a.5.5 0 0 1-.54 0L8 6.829l-2.47 1.645a.5.5 0 0 1-.54 0z"/>
+                                </svg>
+                                <a href="mailto:{{ feedback.user_email }}">{{ feedback.user_email }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-lg-4">
+                        <h6>System Information:</h6>
+                        <div class="system-info">
+                            {% set sys_info = feedback.system_info %}
+                            <div><strong>Platform:</strong> {{ sys_info.platform or 'Unknown' }}</div>
+                            <div><strong>Language:</strong> {{ sys_info.language or 'Unknown' }}</div>
+                            <div><strong>Screen:</strong> {{ sys_info.screen or 'Unknown' }}</div>
+                            <div><strong>Page:</strong> 
+                                {% if sys_info.url %}
+                                <small>{{ sys_info.url.split('/')[-1] or 'home' }}</small>
+                                {% else %}
+                                Unknown
+                                {% endif %}
+                            </div>
+                            {% if sys_info.userAgent %}
+                            <div class="mt-2">
+                                <strong>Browser:</strong>
+                                <small class="text-muted d-block">{{ sys_info.userAgent[:100] }}{% if sys_info.userAgent|length > 100 %}...{% endif %}</small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- No Feedback -->
+<div class="text-center py-5">
+    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" class="text-muted mb-3">
+        <path d="M2.678 11.894a1 1 0 0 1 .287.801 10.97 10.97 0 0 1-.398 2c1.395-.323 2.247-.697 2.634-.893a1 1 0 0 1 .71-.074A8.06 8.06 0 0 0 8 14c3.996 0 7-2.807 7-6 0-3.192-3.004-6-7-6S1 4.808 1 8c0 1.468.617 2.83 1.678 3.894zm-.493 3.905a21.682 21.682 0 0 1-.713.129c-.2.032-.352-.176-.273-.362a9.68 9.68 0 0 0 .244-.637l.003-.010c.248-.72.45-1.548.524-2.319C.743 11.37 0 9.76 0 8c0-3.866 3.582-7 8-7s8 3.134 8 7-3.582 7-8 7a9.06 9.06 0 0 1-2.347-.306c-.52.263-1.639.742-3.468 1.105z"/>
+    </svg>
+    <h4 class="text-muted">No Feedback Yet</h4>
+    <p class="text-muted">User feedback submissions will appear here</p>
+</div>
+{% endif %}
+
+<style>
+.feedback-card {
+    border: none;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition-smooth);
+}
+
+.feedback-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.feedback-type-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.feedback-type-bug {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.feedback-type-feature {
+    background: #dbeafe;
+    color: #2563eb;
+}
+
+.feedback-type-improvement {
+    background: #d1fae5;
+    color: #059669;
+}
+
+.feedback-type-usability {
+    background: #fef3c7;
+    color: #d97706;
+}
+
+.feedback-type-other {
+    background: #f3e8ff;
+    color: #7c3aed;
+}
+
+.feedback-message {
+    background: var(--gray-50);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    border-left: 4px solid var(--accent-blue);
+    white-space: pre-wrap;
+    font-family: system-ui, -apple-system, sans-serif;
+    line-height: 1.6;
+}
+
+.system-info {
+    background: var(--gray-50);
+    padding: var(--spacing-md);
+    border-radius: var(--radius-md);
+    font-size: 0.875rem;
+}
+
+.system-info div {
+    margin-bottom: 0.5rem;
+}
+
+.stat-card {
+    background: var(--white);
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius-lg);
+    padding: var(--spacing-md);
+    transition: var(--transition-smooth);
+}
+
+.stat-card:hover {
+    box-shadow: var(--shadow-sm);
+}
+
+.stat-number {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--accent-blue);
+}
+
+.stat-label {
+    font-size: 0.875rem;
+    color: var(--gray-600);
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}

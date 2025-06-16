@@ -6,6 +6,11 @@ from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
 import os
 import uuid
 import logging
+import json
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime
 
 main_bp = Blueprint('main', __name__)
 
@@ -415,3 +420,171 @@ def get_calculation_info_api():
             'success': False,
             'error': f'情報取得でエラーが発生しました: {str(e)}'
         }), 500
+
+@main_bp.route('/api/feedback', methods=['POST'])
+def submit_feedback():
+    """フィードバック送信APIエンドポイント"""
+    try:
+        # フォームデータを取得
+        feedback_type = request.form.get('feedbackType')
+        subject = request.form.get('feedbackSubject')
+        message = request.form.get('feedbackMessage')
+        user_email = request.form.get('feedbackEmail')
+        system_info = request.form.get('systemInfo')
+        
+        # バリデーション
+        if not feedback_type or not subject or not message:
+            return jsonify({
+                'success': False,
+                'error': 'Required fields are missing'
+            }), 400
+        
+        # システム情報をパース
+        try:
+            system_data = json.loads(system_info) if system_info else {}
+        except json.JSONDecodeError:
+            system_data = {}
+        
+        # フィードバック情報を構造化
+        feedback_data = {
+            'timestamp': datetime.now().isoformat(),
+            'type': feedback_type,
+            'subject': subject,
+            'message': message,
+            'user_email': user_email,
+            'system_info': system_data
+        }
+        
+        # フィードバックファイルに保存
+        save_feedback_to_file(feedback_data)
+        
+        # メール送信（設定されている場合）
+        try:
+            send_feedback_email(feedback_data)
+        except Exception as email_error:
+            logging.warning(f"Email sending failed: {str(email_error)}")
+            # メール送信に失敗してもフィードバック自体は成功とする
+        
+        return jsonify({
+            'success': True,
+            'message': 'Feedback submitted successfully'
+        })
+        
+    except Exception as e:
+        logging.error(f"Feedback submission error: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to submit feedback'
+        }), 500
+
+def save_feedback_to_file(feedback_data):
+    """フィードバックをファイルに保存"""
+    try:
+        # フィードバック保存ディレクトリを作成
+        feedback_dir = os.path.join(current_app.instance_path, 'feedback')
+        os.makedirs(feedback_dir, exist_ok=True)
+        
+        # ファイル名（日付ベース）
+        today = datetime.now().strftime('%Y-%m-%d')
+        feedback_file = os.path.join(feedback_dir, f'feedback_{today}.jsonl')
+        
+        # JSONL形式で追記
+        with open(feedback_file, 'a', encoding='utf-8') as f:
+            f.write(json.dumps(feedback_data, ensure_ascii=False) + '\n')
+            
+        logging.info(f"Feedback saved to {feedback_file}")
+        
+    except Exception as e:
+        logging.error(f"Failed to save feedback to file: {str(e)}")
+        raise
+
+def send_feedback_email(feedback_data):
+    """フィードバックをメールで送信（設定されている場合）"""
+    
+    # 環境変数からメール設定を取得
+    smtp_server = os.environ.get('FEEDBACK_SMTP_SERVER')
+    smtp_port = int(os.environ.get('FEEDBACK_SMTP_PORT', '587'))
+    smtp_username = os.environ.get('FEEDBACK_SMTP_USERNAME')
+    smtp_password = os.environ.get('FEEDBACK_SMTP_PASSWORD')
+    recipient_email = os.environ.get('FEEDBACK_RECIPIENT_EMAIL')
+    
+    # メール設定が不完全な場合はスキップ
+    if not all([smtp_server, smtp_username, smtp_password, recipient_email]):
+        logging.info("Email settings not configured, skipping email notification")
+        return
+    
+    try:
+        # メール作成
+        msg = MIMEMultipart()
+        msg['From'] = smtp_username
+        msg['To'] = recipient_email
+        msg['Subject'] = f"[Compound Manager] {feedback_data['type'].title()}: {feedback_data['subject']}"
+        
+        # メール本文
+        body = f"""
+新しいフィードバックが届きました。
+
+種類: {feedback_data['type']}
+件名: {feedback_data['subject']}
+送信日時: {feedback_data['timestamp']}
+ユーザーメール: {feedback_data['user_email'] or '未提供'}
+
+メッセージ:
+{feedback_data['message']}
+
+システム情報:
+- ブラウザ: {feedback_data['system_info'].get('userAgent', '不明')}
+- プラットフォーム: {feedback_data['system_info'].get('platform', '不明')}
+- 言語: {feedback_data['system_info'].get('language', '不明')}
+- 画面解像度: {feedback_data['system_info'].get('screen', '不明')}
+- URL: {feedback_data['system_info'].get('url', '不明')}
+
+--
+Compound Management System
+自動送信メール
+        """
+        
+        msg.attach(MIMEText(body, 'plain', 'utf-8'))
+        
+        # SMTP送信
+        with smtplib.SMTP(smtp_server, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_username, smtp_password)
+            server.send_message(msg)
+            
+        logging.info(f"Feedback email sent to {recipient_email}")
+        
+    except Exception as e:
+        logging.error(f"Failed to send feedback email: {str(e)}")
+        raise
+
+@main_bp.route('/admin/feedback')
+def view_feedback():
+    """フィードバック管理画面（開発者用）"""
+    try:
+        feedback_dir = os.path.join(current_app.instance_path, 'feedback')
+        feedbacks = []
+        
+        if os.path.exists(feedback_dir):
+            # フィードバックファイルを日付順でソート
+            feedback_files = sorted([f for f in os.listdir(feedback_dir) if f.endswith('.jsonl')], reverse=True)
+            
+            for file in feedback_files:
+                file_path = os.path.join(feedback_dir, file)
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        for line in f:
+                            feedback = json.loads(line.strip())
+                            feedbacks.append(feedback)
+                except Exception as e:
+                    logging.error(f"Error reading feedback file {file}: {str(e)}")
+        
+        # 日付順でソート
+        feedbacks.sort(key=lambda x: x.get('timestamp', ''), reverse=True)
+        
+        return render_template('admin_feedback.html', feedbacks=feedbacks)
+        
+    except Exception as e:
+        logging.error(f"Error viewing feedback: {str(e)}")
+        flash('Error loading feedback data', 'error')
+        return redirect(url_for('main.index'))
