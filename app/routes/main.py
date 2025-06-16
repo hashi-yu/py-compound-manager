@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory, current_app
 from werkzeug.utils import secure_filename
 from app import db
-from app.models import Compound, SpectralData, Project
+from app.models import Compound, SpectralData, Folder
 from app.utils.molecular_calculator import HighPrecisionMolecularCalculator
 import os
 import uuid
@@ -25,18 +25,78 @@ def allowed_file(filename):
     # 拡張子がある場合の従来の処理
     return filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
 
+def build_folder_tree():
+    """フォルダツリーを構築"""
+    def get_all_descendant_compounds(folder_id):
+        """指定フォルダとその子フォルダ以下のすべての化合物を取得"""
+        compounds = []
+        # 直接の化合物
+        direct_compounds = Compound.query.filter_by(folder_id=folder_id).all()
+        compounds.extend(direct_compounds)
+        # 子フォルダの化合物
+        child_folders = Folder.query.filter_by(parent_id=folder_id).all()
+        for child_folder in child_folders:
+            compounds.extend(get_all_descendant_compounds(child_folder.id))
+        return compounds
+    
+    def build_tree(parent_id=None):
+        folders = Folder.query.filter_by(parent_id=parent_id).order_by(Folder.name).all()
+        tree = []
+        for folder in folders:
+            # 直接の化合物数
+            direct_count = len(folder.compounds)
+            # 子フォルダ含む全化合物数
+            total_count = len(get_all_descendant_compounds(folder.id))
+            
+            folder_data = {
+                'folder': folder,
+                'children': build_tree(folder.id),
+                'compound_count': direct_count,
+                'total_compound_count': total_count
+            }
+            tree.append(folder_data)
+        return tree
+    return build_tree()
+
+def get_all_descendant_compounds(folder_id):
+    """指定フォルダとその子フォルダ以下のすべての化合物を取得"""
+    compounds = []
+    # 直接の化合物
+    direct_compounds = Compound.query.filter_by(folder_id=folder_id).all()
+    compounds.extend(direct_compounds)
+    # 子フォルダの化合物
+    child_folders = Folder.query.filter_by(parent_id=folder_id).all()
+    for child_folder in child_folders:
+        compounds.extend(get_all_descendant_compounds(child_folder.id))
+    return compounds
+
 @main_bp.route('/')
 def index():
-    project_id = request.args.get('project_id', type=int)
-    if project_id:
-        compounds = Compound.query.filter_by(project_id=project_id).order_by(Compound.updated_date.desc()).all()
-        current_project = Project.query.get(project_id)
-    else:
-        compounds = Compound.query.order_by(Compound.updated_date.desc()).all()
-        current_project = None
+    folder_id = request.args.get('folder_id', type=int)
+    include_subfolders = request.args.get('include_subfolders', 'true') == 'true'
     
-    projects = Project.query.order_by(Project.name).all()
-    return render_template('index.html', compounds=compounds, projects=projects, current_project=current_project)
+    if folder_id:
+        current_folder = Folder.query.get(folder_id)
+        if include_subfolders:
+            # 親フォルダには子フォルダの化合物も含める
+            compounds = get_all_descendant_compounds(folder_id)
+        else:
+            # 直接の化合物のみ
+            compounds = Compound.query.filter_by(folder_id=folder_id).all()
+        compounds = sorted(compounds, key=lambda x: x.updated_date, reverse=True)
+    else:
+        compounds = Compound.query.filter_by(folder_id=None).order_by(Compound.updated_date.desc()).all()
+        current_folder = None
+    
+    folder_tree = build_folder_tree()
+    unorganized_count = Compound.query.filter_by(folder_id=None).count()
+    
+    return render_template('index.html', 
+                         compounds=compounds, 
+                         folder_tree=folder_tree, 
+                         current_folder=current_folder,
+                         unorganized_count=unorganized_count,
+                         include_subfolders=include_subfolders)
 
 @main_bp.route('/compound/<int:compound_id>')
 def compound_detail(compound_id):
@@ -50,7 +110,7 @@ def add_compound():
         molecular_formula = request.form.get('molecular_formula', '').strip()
         molecular_weight_str = request.form.get('molecular_weight', '').strip()
         notes = request.form.get('notes', '')
-        project_id = request.form.get('project_id') or None
+        folder_id = request.form.get('folder_id') or None
         
         # 分子量の処理：空文字列またはNoneの場合はNoneを設定
         molecular_weight = None
@@ -68,7 +128,7 @@ def add_compound():
             name=name,
             molecular_formula=molecular_formula,
             molecular_weight=molecular_weight,
-            project_id=project_id,
+            folder_id=folder_id,
             notes=notes
         )
         
@@ -88,8 +148,8 @@ def add_compound():
         flash('化合物が正常に追加されました。', 'success')
         return redirect(url_for('main.compound_detail', compound_id=compound.id))
     
-    projects = Project.query.order_by(Project.name).all()
-    return render_template('add_compound.html', projects=projects)
+    all_folders = Folder.query.order_by(Folder.name).all()
+    return render_template('add_compound.html', folders=all_folders)
 
 @main_bp.route('/upload_data/<int:compound_id>', methods=['POST'])
 def upload_spectral_data(compound_id):
@@ -155,7 +215,7 @@ def edit_compound(compound_id):
         molecular_formula = request.form.get('molecular_formula', '').strip()
         molecular_weight_str = request.form.get('molecular_weight', '').strip()
         compound.notes = request.form.get('notes', '')
-        compound.project_id = request.form.get('project_id') or None
+        compound.folder_id = request.form.get('folder_id') or None
         
         # 分子量の処理
         compound.molecular_weight = None
@@ -189,8 +249,8 @@ def edit_compound(compound_id):
         flash('化合物情報が更新されました。', 'success')
         return redirect(url_for('main.compound_detail', compound_id=compound_id))
     
-    projects = Project.query.order_by(Project.name).all()
-    return render_template('edit_compound.html', compound=compound, projects=projects)
+    folders = Folder.query.order_by(Folder.name).all()
+    return render_template('edit_compound_simple.html', compound=compound, folders=folders)
 
 @main_bp.route('/delete_structure/<int:compound_id>', methods=['POST'])
 def delete_structure(compound_id):
@@ -248,58 +308,350 @@ def delete_compound(compound_id):
     flash(f'化合物「{compound_name}」が削除されました。', 'success')
     return redirect(url_for('main.index'))
 
-@main_bp.route('/projects')
-def projects():
-    projects = Project.query.order_by(Project.updated_date.desc()).all()
-    return render_template('projects.html', projects=projects)
+# =====================================
+# フォルダ管理ルート
+# =====================================
 
-@main_bp.route('/add_project', methods=['GET', 'POST'])
-def add_project():
+@main_bp.route('/folders')
+def folders():
+    all_folders = Folder.query.order_by(Folder.name).all()
+    return render_template('folders.html', folders=all_folders)
+
+@main_bp.route('/add_folder', methods=['GET', 'POST'])
+def add_folder():
     if request.method == 'POST':
         name = request.form['name']
-        description = request.form.get('description', '')
+        parent_id = request.form.get('parent_id') or None
         
-        project = Project(
+        folder = Folder(
             name=name,
-            description=description
+            parent_id=parent_id
         )
         
-        db.session.add(project)
+        db.session.add(folder)
         db.session.commit()
-        flash('プロジェクトが正常に追加されました。', 'success')
-        return redirect(url_for('main.projects'))
+        flash('フォルダが正常に追加されました。', 'success')
+        return redirect(url_for('main.folders'))
     
-    return render_template('add_project.html')
+    all_folders = Folder.query.order_by(Folder.name).all()
+    return render_template('add_folder.html', folders=all_folders)
 
-@main_bp.route('/edit_project/<int:project_id>', methods=['GET', 'POST'])
-def edit_project(project_id):
-    project = Project.query.get_or_404(project_id)
+@main_bp.route('/edit_folder/<int:folder_id>', methods=['GET', 'POST'])
+def edit_folder(folder_id):
+    folder = Folder.query.get_or_404(folder_id)
     
     if request.method == 'POST':
-        project.name = request.form['name']
-        project.description = request.form.get('description', '')
+        folder.name = request.form['name']
+        parent_id = request.form.get('parent_id') or None
         
+        # 自分自身を親にすることを防ぐ
+        if parent_id and int(parent_id) == folder.id:
+            flash('フォルダは自分自身を親にできません。', 'error')
+            return redirect(url_for('main.edit_folder', folder_id=folder_id))
+        
+        folder.parent_id = parent_id
         db.session.commit()
-        flash('プロジェクトが更新されました。', 'success')
-        return redirect(url_for('main.projects'))
+        flash('フォルダが更新されました。', 'success')
+        return redirect(url_for('main.folders'))
     
-    return render_template('edit_project.html', project=project)
+    other_folders = Folder.query.filter(Folder.id != folder.id).order_by(Folder.name).all()
+    return render_template('edit_folder.html', folder=folder, folders=other_folders)
 
-@main_bp.route('/delete_project/<int:project_id>', methods=['POST'])
-def delete_project(project_id):
-    project = Project.query.get_or_404(project_id)
-    project_name = project.name
+@main_bp.route('/delete_folder/<int:folder_id>', methods=['POST'])
+def delete_folder(folder_id):
+    folder = Folder.query.get_or_404(folder_id)
+    folder_name = folder.name
     
-    # プロジェクトに属する化合物のproject_idをNullに設定
-    compounds = Compound.query.filter_by(project_id=project_id).all()
+    # フォルダ内の化合物をルートに移動
+    compounds = Compound.query.filter_by(folder_id=folder_id).all()
     for compound in compounds:
-        compound.project_id = None
+        compound.folder_id = None
     
-    db.session.delete(project)
+    # 子フォルダを親フォルダに移動
+    children = Folder.query.filter_by(parent_id=folder_id).all()
+    for child in children:
+        child.parent_id = folder.parent_id
+    
+    db.session.delete(folder)
     db.session.commit()
     
-    flash(f'プロジェクト「{project_name}」が削除されました。関連する化合物は未分類になりました。', 'success')
-    return redirect(url_for('main.projects'))
+    flash(f'フォルダ「{folder_name}」が削除されました。', 'success')
+    return redirect(url_for('main.folders'))
+
+@main_bp.route('/api/search', methods=['GET', 'POST'])
+def search_compounds():
+    """高度な化合物検索API"""
+    try:
+        if request.method == 'POST':
+            data = request.get_json()
+        else:
+            data = request.args.to_dict()
+        
+        query = data.get('query', '').strip()
+        folder_id = data.get('folder_id')
+        sort_by = data.get('sort_by', 'updated_date')
+        sort_order = data.get('sort_order', 'desc')
+        page = int(data.get('page', 1))
+        per_page = int(data.get('per_page', 20))
+        
+        # ベースクエリを構築
+        compounds_query = Compound.query
+        
+        # フォルダフィルタ
+        if folder_id:
+            if folder_id == 'unorganized':
+                compounds_query = compounds_query.filter(Compound.folder_id.is_(None))
+            else:
+                compounds_query = compounds_query.filter(Compound.folder_id == folder_id)
+        
+        # 検索クエリがある場合
+        if query:
+            search_terms = query.split()
+            for term in search_terms:
+                # 化合物名、分子式、メモで検索
+                search_filter = db.or_(
+                    Compound.name.ilike(f'%{term}%'),
+                    Compound.molecular_formula.ilike(f'%{term}%'),
+                    Compound.notes.ilike(f'%{term}%')
+                )
+                compounds_query = compounds_query.filter(search_filter)
+        
+        # ソート
+        sort_column = getattr(Compound, sort_by, Compound.updated_date)
+        if sort_order == 'desc':
+            compounds_query = compounds_query.order_by(sort_column.desc())
+        else:
+            compounds_query = compounds_query.order_by(sort_column.asc())
+        
+        # ページネーション
+        pagination = compounds_query.paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        compounds = []
+        for compound in pagination.items:
+            compounds.append({
+                'id': compound.id,
+                'name': compound.name,
+                'molecular_formula': compound.molecular_formula,
+                'molecular_weight': compound.molecular_weight,
+                'folder_name': compound.folder.name if compound.folder else None,
+                'folder_path': compound.folder.get_path() if compound.folder else None,
+                'structure_image': compound.structure_image,
+                'notes': compound.notes,
+                'created_date': compound.created_date.isoformat(),
+                'updated_date': compound.updated_date.isoformat()
+            })
+        
+        return jsonify({
+            'success': True,
+            'compounds': compounds,
+            'pagination': {
+                'page': pagination.page,
+                'pages': pagination.pages,
+                'per_page': pagination.per_page,
+                'total': pagination.total,
+                'has_next': pagination.has_next,
+                'has_prev': pagination.has_prev
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/move-compound', methods=['POST'])
+def move_compound():
+    """化合物をフォルダ間で移動"""
+    try:
+        data = request.get_json()
+        compound_id = data.get('compound_id')
+        folder_id = data.get('folder_id')  # Noneの場合は未整理に移動
+        
+        compound = Compound.query.get_or_404(compound_id)
+        
+        # フォルダが存在するかチェック（folder_idがNoneでない場合）
+        if folder_id is not None:
+            folder = Folder.query.get_or_404(folder_id)
+        
+        # 化合物を移動
+        compound.folder_id = folder_id
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': '化合物が移動されました'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/bulk-move', methods=['POST'])
+def bulk_move_compounds():
+    """化合物の一括移動"""
+    try:
+        data = request.get_json()
+        compound_ids = data.get('compound_ids', [])
+        folder_id = data.get('folder_id')  # Noneの場合は未整理に移動
+        
+        if not compound_ids:
+            return jsonify({
+                'success': False,
+                'error': '移動する化合物が選択されていません'
+            }), 400
+        
+        # フォルダの存在確認
+        if folder_id is not None:
+            folder = Folder.query.get_or_404(folder_id)
+        
+        # 化合物の一括移動
+        compounds = Compound.query.filter(Compound.id.in_(compound_ids)).all()
+        moved_count = 0
+        
+        for compound in compounds:
+            compound.folder_id = folder_id
+            moved_count += 1
+        
+        db.session.commit()
+        
+        folder_name = folder.name if folder_id else "未整理"
+        return jsonify({
+            'success': True,
+            'message': f'{moved_count}件の化合物を「{folder_name}」に移動しました'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/bulk-delete', methods=['POST'])
+def bulk_delete_compounds():
+    """化合物の一括削除"""
+    try:
+        data = request.get_json()
+        compound_ids = data.get('compound_ids', [])
+        
+        if not compound_ids:
+            return jsonify({
+                'success': False,
+                'error': '削除する化合物が選択されていません'
+            }), 400
+        
+        compounds = Compound.query.filter(Compound.id.in_(compound_ids)).all()
+        deleted_count = 0
+        
+        for compound in compounds:
+            # ファイル削除
+            if compound.structure_image:
+                structure_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], compound.structure_image)
+                if os.path.exists(structure_file_path):
+                    os.remove(structure_file_path)
+            
+            # スペクトルデータファイル削除
+            for spectral_data in compound.spectral_data:
+                data_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], spectral_data.file_path)
+                if os.path.exists(data_file_path):
+                    os.remove(data_file_path)
+            
+            db.session.delete(compound)
+            deleted_count += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'{deleted_count}件の化合物を削除しました'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
+
+@main_bp.route('/api/bulk-export', methods=['POST'])
+def bulk_export_compounds():
+    """化合物の一括エクスポート"""
+    try:
+        data = request.get_json()
+        compound_ids = data.get('compound_ids', [])
+        export_format = data.get('format', 'csv')  # csv, json, excel
+        
+        if not compound_ids:
+            return jsonify({
+                'success': False,
+                'error': 'エクスポートする化合物が選択されていません'
+            }), 400
+        
+        compounds = Compound.query.filter(Compound.id.in_(compound_ids)).all()
+        
+        if export_format == 'json':
+            # JSON形式でエクスポート
+            export_data = []
+            for compound in compounds:
+                export_data.append({
+                    'id': compound.id,
+                    'name': compound.name,
+                    'molecular_formula': compound.molecular_formula,
+                    'molecular_weight': compound.molecular_weight,
+                    'folder_path': compound.folder.get_path() if compound.folder else None,
+                    'notes': compound.notes,
+                    'created_date': compound.created_date.isoformat(),
+                    'updated_date': compound.updated_date.isoformat(),
+                    'spectral_data_count': len(compound.spectral_data)
+                })
+            
+            from flask import make_response
+            response = make_response(jsonify(export_data))
+            response.headers['Content-Disposition'] = 'attachment; filename=compounds_export.json'
+            response.headers['Content-Type'] = 'application/json'
+            return response
+        
+        else:
+            # CSV形式でエクスポート（デフォルト）
+            import csv
+            import io
+            
+            output = io.StringIO()
+            writer = csv.writer(output)
+            
+            # ヘッダー
+            writer.writerow(['ID', '化合物名', '分子式', '分子量', 'フォルダ', 'メモ', '作成日', '更新日'])
+            
+            # データ
+            for compound in compounds:
+                writer.writerow([
+                    compound.id,
+                    compound.name,
+                    compound.molecular_formula or '',
+                    compound.molecular_weight or '',
+                    compound.folder.get_path() if compound.folder else '未整理',
+                    compound.notes or '',
+                    compound.created_date.strftime('%Y-%m-%d %H:%M:%S'),
+                    compound.updated_date.strftime('%Y-%m-%d %H:%M:%S')
+                ])
+            
+            from flask import make_response
+            response = make_response(output.getvalue())
+            response.headers['Content-Disposition'] = 'attachment; filename=compounds_export.csv'
+            response.headers['Content-Type'] = 'text/csv; charset=utf-8'
+            return response
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
 
 # =====================================
 # API エンドポイント（画像解析機能）

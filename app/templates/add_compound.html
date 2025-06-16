@@ -75,16 +75,16 @@
                     </div>
                     
                     <div class="mb-4">
-                        <label for="project_id" class="form-label">
+                        <label for="folder_id" class="form-label">
                             <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
-                                <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13A1.5 1.5 0 0 0 16 14.5v-13A1.5 1.5 0 0 0 14.5 0h-13zM1 1.5A.5.5 0 0 1 1.5 1h13a.5.5 0 0 1 .5.5v13a.5.5 0 0 1-.5.5h-13a.5.5 0 0 1-.5-.5v-13z"/>
+                                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
                             </svg>
-                            Project
+                            Folder
                         </label>
-                        <select class="form-select" id="project_id" name="project_id">
-                            <option value="">Select Project (Optional)</option>
-                            {% for project in projects %}
-                            <option value="{{ project.id }}">{{ project.name }}</option>
+                        <select class="form-select" id="folder_id" name="folder_id">
+                            <option value="">未整理 (No Folder)</option>
+                            {% for folder in folders %}
+                            <option value="{{ folder.id }}">{{ folder.get_path() }}</option>
                             {% endfor %}
                         </select>
                         <div class="form-text">
@@ -92,7 +92,7 @@
                                 <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
                                 <path d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
                             </svg>
-                            Leave blank if not assigning to a project
+                            Leave blank to keep unorganized
                         </div>
                     </div>
                 </div>

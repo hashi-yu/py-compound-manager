@@ -1,2 +1,1 @@
-from .compound import Compound, SpectralData
-from .project import Project
+from .compound import Compound, SpectralData, Folder

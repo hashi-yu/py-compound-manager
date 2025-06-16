@@ -1,0 +1,1324 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="finder-container">
+    <!-- Sidebar -->
+    <div class="finder-sidebar">
+        <div class="sidebar-header">
+            <h6 class="sidebar-title">
+                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                    <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                </svg>
+                Folders
+            </h6>
+            <button class="btn btn-sm btn-outline-primary" onclick="showNewFolderModal()">
+                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                </svg>
+            </button>
+        </div>
+        
+        <div class="sidebar-content">
+            <!-- Uncategorized Compounds -->
+            <div class="sidebar-item {% if not current_folder %}active{% endif %}" 
+                 onclick="navigateToFolder(null)"
+                 ondrop="handleDrop(event, null)" 
+                 ondragover="handleDragOver(event)">
+                <div class="sidebar-item-content">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
+                        <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 14.5 0h-13z"/>
+                    </svg>
+                    <span class="sidebar-item-text">Uncategorized</span>
+                    {% if unorganized_count > 0 %}
+                    <span class="badge bg-secondary">{{ unorganized_count }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Folder Tree -->
+            {% macro render_folder_tree(folders, level=0) %}
+                {% for item in folders %}
+                    <div class="sidebar-item {% if current_folder and current_folder.id == item.folder.id %}active{% endif %}" 
+                         data-folder-id="{{ item.folder.id }}" 
+                         style="padding-left: {{ 12 + (level * 20) }}px;"
+                         onclick="navigateToFolder({{ item.folder.id }})"
+                         ondrop="handleDrop(event, {{ item.folder.id }})" 
+                         ondragover="handleDragOver(event)">
+                        <div class="sidebar-item-content">
+                            {% if item.children %}
+                            <button class="folder-toggle" onclick="toggleFolder(event, {{ item.folder.id }})">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="toggle-icon">
+                                    <path d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671z"/>
+                                </svg>
+                            </button>
+                            {% else %}
+                            <span class="folder-spacer"></span>
+                            {% endif %}
+                            
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
+                                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                            </svg>
+                            <span class="sidebar-item-text">{{ item.folder.name }}</span>
+                            {% if item.total_compound_count > 0 %}
+                            <span class="badge bg-primary" title="Direct: {{ item.compound_count }}, Total: {{ item.total_compound_count }}">
+                                {{ item.total_compound_count }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if item.children %}
+                    <div class="folder-children" id="children-{{ item.folder.id }}">
+                        {{ render_folder_tree(item.children, level + 1) }}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+            {% endmacro %}
+            
+            {{ render_folder_tree(folder_tree) }}
+        </div>
+    </div>
+    
+    <!-- Main Content Area -->
+    <div class="finder-main">
+        <!-- Breadcrumb Navigation -->
+        {% if current_folder %}
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item">
+                    <a href="{{ url_for('main.index') }}">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M8 3.293l6 6V13.5a1.5 1.5 0 0 1-1.5 1.5h-9A1.5 1.5 0 0 1 2 13.5V9.293l6-6zm5-.793V6l-2-2V2.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v.707zM2 9.293V13.5A2.5 2.5 0 0 0 4.5 16h7a2.5 2.5 0 0 0 2.5-2.5V9.293l-8-8-8 8z"/>
+                        </svg>
+                        Home
+                    </a>
+                </li>
+                {% set path_parts = current_folder.get_path().split('/') %}
+                {% for part in path_parts %}
+                    {% if loop.last %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ part }}</li>
+                    {% else %}
+                    <li class="breadcrumb-item"><a href="#">{{ part }}</a></li>
+                    {% endif %}
+                {% endfor %}
+            </ol>
+        </nav>
+        {% endif %}
+        
+        <!-- Search Bar -->
+        <div class="search-header">
+            <div class="search-container">
+                <div class="search-input-group">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="search-icon">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                    <input type="text" class="search-input" id="globalSearch" placeholder="Search by compound name, formula, notes...">
+                    <button class="search-clear" id="clearSearch" style="display: none;">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="search-filters">
+                    <select class="form-select form-select-sm" id="sortBy">
+                        <option value="updated_date">Updated Date</option>
+                        <option value="name">Name</option>
+                        <option value="molecular_weight">Molecular Weight</option>
+                        <option value="created_date">Created Date</option>
+                    </select>
+                    <select class="form-select form-select-sm" id="sortOrder">
+                        <option value="desc">Descending</option>
+                        <option value="asc">Ascending</option>
+                    </select>
+                    <button class="btn btn-outline-secondary btn-sm" id="toggleFilters">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M6 10.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 0 1h-3a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5zm-2-3a.5.5 0 0 1 .5-.5h11a.5.5 0 0 1 0 1h-11a.5.5 0 0 1-.5-.5z"/>
+                        </svg>
+                        Filters
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Advanced Filters (Hidden by default) -->
+            <div class="advanced-filters" id="advancedFilters" style="display: none;">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="filterFolder" class="form-label">Folder</label>
+                        <select class="form-select form-select-sm" id="filterFolder">
+                            <option value="">All Folders</option>
+                            <option value="unorganized">Uncategorized</option>
+                            {% macro render_folder_filter_options(folders, level=0) %}
+                                {% for item in folders %}
+                                    <option value="{{ item.folder.id }}">
+                                        {{ "　" * level }}{{ item.folder.name }}
+                                    </option>
+                                    {% if item.children %}
+                                        {{ render_folder_filter_options(item.children, level + 1) }}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endmacro %}
+                            {{ render_folder_filter_options(folder_tree) }}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterDateFrom" class="form-label">Created From</label>
+                        <input type="date" class="form-control form-control-sm" id="filterDateFrom">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterDateTo" class="form-label">Created To</label>
+                        <input type="date" class="form-control form-control-sm" id="filterDateTo">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="filterHasImage" class="form-label">Structure Image</label>
+                        <select class="form-select form-select-sm" id="filterHasImage">
+                            <option value="">All</option>
+                            <option value="yes">With Image</option>
+                            <option value="no">No Image</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Header -->
+        <div class="content-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h4 class="content-title">
+                        {% if current_folder %}
+                            {{ current_folder.name }}
+                        {% else %}
+                            Uncategorized Compounds
+                        {% endif %}
+                    </h4>
+                    <p class="content-subtitle" id="compoundCount">
+                        {% if compounds %}
+                            {{ compounds|length }} compounds
+                        {% else %}
+                            No compounds found
+                        {% endif %}
+                    </p>
+                    {% if current_folder %}
+                    <div class="subfolder-toggle">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="includeSubfolders" 
+                                   {% if include_subfolders %}checked{% endif %}
+                                   onchange="toggleSubfolderView()">
+                            <label class="form-check-label" for="includeSubfolders">
+                                Include compounds from subfolders
+                            </label>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="content-actions">
+                    <button class="btn btn-outline-secondary btn-sm me-2" id="selectAllToggle">
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                            <path d="M2.5 8a5.5 5.5 0 0 1 11 0 .5.5 0 0 0 1 0 6.5 6.5 0 1 0-13 0 .5.5 0 0 0 1 0z"/>
+                            <path d="M7.394 6.813a.5.5 0 1 0-.788.624l2.5 3.126a.5.5 0 0 0 .79-.004l5-6.25a.5.5 0 1 0-.792-.634L9.5 9.367 7.394 6.813z"/>
+                        </svg>
+                        Select All
+                    </button>
+                    <div class="btn-group me-2" id="bulkActions" style="display: none;">
+                        <button class="btn btn-outline-warning btn-sm" id="bulkMove">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M7.646 4.646a.5.5 0 0 1 .708 0l6 6a.5.5 0 0 1-.708.708L8 5.707l-5.646 5.647a.5.5 0 0 1-.708-.708l6-6z"/>
+                            </svg>
+                            Move
+                        </button>
+                        <button class="btn btn-outline-info btn-sm" id="bulkExport">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
+                            </svg>
+                            Export
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" id="bulkDelete">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Z"/>
+                            </svg>
+                            Delete
+                        </button>
+                    </div>
+                    <a href="{{ url_for('main.add_compound') }}" class="btn btn-primary">
+                        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                        </svg>
+                        Add Compound
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Content Body -->
+        <div class="content-body">
+            {% block main_content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+<!-- New Folder Modal -->
+<div class="modal fade" id="newFolderModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create New Folder</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="newFolderForm" action="{{ url_for('main.add_folder') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="folderName" class="form-label">Folder Name</label>
+                        <input type="text" class="form-control" id="folderName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="parentFolder" class="form-label">Parent Folder</label>
+                        <select class="form-select" id="parentFolder" name="parent_id">
+                            <option value="">None (Root Folder)</option>
+                            {% macro render_folder_options(folders, level=0) %}
+                                {% for item in folders %}
+                                    <option value="{{ item.folder.id }}">
+                                        {{ "　" * level }}{{ item.folder.name }}
+                                    </option>
+                                    {% if item.children %}
+                                        {{ render_folder_options(item.children, level + 1) }}
+                                    {% endif %}
+                                {% endfor %}
+                            {% endmacro %}
+                            {{ render_folder_options(folder_tree) }}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+.finder-container {
+    display: flex;
+    height: calc(100vh - 120px);
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.finder-sidebar {
+    width: 280px;
+    min-width: 280px;
+    background: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid #dee2e6;
+    background: #e9ecef;
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.sidebar-title {
+    margin: 0;
+    font-weight: 600;
+    color: #495057;
+    flex-grow: 1;
+}
+
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 0;
+}
+
+.sidebar-item {
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+}
+
+.sidebar-item:hover {
+    background-color: #e9ecef;
+}
+
+.sidebar-item.active {
+    background-color: #007bff;
+    color: white;
+}
+
+.sidebar-item.active .badge {
+    background-color: rgba(255, 255, 255, 0.3) !important;
+}
+
+.sidebar-item.drag-over {
+    background-color: #007bff;
+    color: white;
+}
+
+.compound-card.dragging {
+    opacity: 0.5;
+    transform: rotate(5deg);
+}
+
+/* Search Header Styles */
+.search-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #dee2e6;
+    background: white;
+}
+
+.search-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.search-input-group {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+}
+
+.search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    pointer-events: none;
+}
+
+.search-input {
+    width: 100%;
+    padding: 8px 40px 8px 40px;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.15s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.search-clear {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6c757d;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 3px;
+}
+
+.search-clear:hover {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+.search-filters {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.advanced-filters {
+    margin-top: 16px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.advanced-filters .form-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 4px;
+}
+
+.subfolder-toggle {
+    margin-top: 8px;
+}
+
+.subfolder-toggle .form-check-label {
+    font-size: 13px;
+    color: #6c757d;
+    user-select: none;
+}
+
+.subfolder-toggle .form-check-input:checked {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+/* Bulk Action Styles */
+.bulk-action-bar {
+    position: sticky;
+    top: 0;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    padding: 8px 16px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 6px;
+    display: none;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
+}
+
+.bulk-action-bar.show {
+    display: flex;
+}
+
+.compound-card {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.compound-card.selected {
+    box-shadow: 0 0 0 2px #007bff;
+    transform: translateY(-2px);
+}
+
+.compound-card .selection-checkbox {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    z-index: 5;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.compound-card:hover .selection-checkbox,
+.compound-card.selected .selection-checkbox {
+    opacity: 1;
+}
+
+.selection-checkbox input[type="checkbox"] {
+    transform: scale(1.2);
+}
+
+/* Loading States */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.sidebar-item-content {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.sidebar-icon {
+    flex-shrink: 0;
+    opacity: 0.8;
+}
+
+.sidebar-item-text {
+    flex: 1;
+    font-size: 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.folder-toggle {
+    background: none;
+    border: none;
+    padding: 0;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: inherit;
+}
+
+.folder-spacer {
+    width: 16px;
+    height: 16px;
+}
+
+.folder-children {
+    display: block;
+}
+
+.folder-children.collapsed {
+    display: none;
+}
+
+.toggle-icon {
+    transition: transform 0.2s ease;
+}
+
+.toggle-icon.expanded {
+    transform: rotate(90deg);
+}
+
+.finder-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.content-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid #dee2e6;
+    background: white;
+}
+
+.content-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #212529;
+}
+
+.content-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+}
+
+.content-body {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    background: #fefefe;
+}
+
+.breadcrumb {
+    margin: 0 0 16px 0;
+    padding: 8px 0;
+    background: none;
+}
+
+.breadcrumb-item + .breadcrumb-item::before {
+    content: ">";
+    color: #6c757d;
+}
+
+.badge {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+}
+
+@media (max-width: 768px) {
+    .finder-sidebar {
+        width: 240px;
+        min-width: 240px;
+    }
+    
+    .sidebar-header {
+        padding: 10px 12px;
+    }
+    
+    .content-header {
+        padding: 12px 16px;
+    }
+    
+    .content-body {
+        padding: 16px;
+    }
+}
+</style>
+
+<script>
+function navigateToFolder(folderId) {
+    if (folderId) {
+        window.location.href = '{{ url_for("main.index") }}?folder_id=' + folderId;
+    } else {
+        window.location.href = '{{ url_for("main.index") }}';
+    }
+}
+
+function toggleSubfolderView() {
+    const checkbox = document.getElementById('includeSubfolders');
+    const currentParams = new URLSearchParams(window.location.search);
+    
+    if (checkbox.checked) {
+        currentParams.set('include_subfolders', 'true');
+    } else {
+        currentParams.set('include_subfolders', 'false');
+    }
+    
+    window.location.href = window.location.pathname + '?' + currentParams.toString();
+}
+
+function toggleFolder(event, folderId) {
+    event.stopPropagation();
+    
+    const childrenElement = document.getElementById('children-' + folderId);
+    const toggleIcon = event.target.closest('.folder-toggle').querySelector('.toggle-icon');
+    
+    if (childrenElement.classList.contains('collapsed')) {
+        childrenElement.classList.remove('collapsed');
+        toggleIcon.classList.add('expanded');
+    } else {
+        childrenElement.classList.add('collapsed');
+        toggleIcon.classList.remove('expanded');
+    }
+}
+
+function showNewFolderModal() {
+    const modal = new bootstrap.Modal(document.getElementById('newFolderModal'));
+    modal.show();
+}
+
+// Initialize expanded folders
+document.addEventListener('DOMContentLoaded', function() {
+    // Expand folders that contain the current folder in their path
+    {% if current_folder %}
+    const currentFolderId = {{ current_folder.id }};
+    expandToFolder(currentFolderId);
+    {% endif %}
+});
+
+function expandToFolder(folderId) {
+    const folderElement = document.querySelector(`[data-folder-id="${folderId}"]`);
+    if (folderElement) {
+        let parent = folderElement.parentElement;
+        while (parent && parent.classList.contains('folder-children')) {
+            parent.classList.remove('collapsed');
+            const toggleIcon = parent.previousElementSibling?.querySelector('.toggle-icon');
+            if (toggleIcon) {
+                toggleIcon.classList.add('expanded');
+            }
+            parent = parent.parentElement?.parentElement;
+        }
+    }
+}
+
+// ドラッグ&ドロップ機能
+function handleDragOver(event) {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = "move";
+    event.currentTarget.classList.add('drag-over');
+}
+
+function handleDragLeave(event) {
+    event.currentTarget.classList.remove('drag-over');
+}
+
+function handleDrop(event, folderId) {
+    event.preventDefault();
+    event.stopPropagation();
+    event.currentTarget.classList.remove('drag-over');
+    
+    const compoundId = event.dataTransfer.getData('text/plain');
+    
+    if (compoundId) {
+        moveCompound(compoundId, folderId);
+    }
+}
+
+async function moveCompound(compoundId, folderId) {
+    try {
+        const response = await fetch('/api/move-compound', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                compound_id: parseInt(compoundId),
+                folder_id: folderId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            // 成功メッセージを表示
+            showNotification(result.message, 'success');
+            // ページをリロードして変更を反映
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification(result.error || 'Move failed', 'error');
+        }
+    } catch (error) {
+        console.error('Error moving compound:', error);
+        showNotification('Error occurred during move', 'error');
+    }
+}
+
+function showNotification(message, type) {
+    const alertClass = type === 'success' ? 'alert-success' : 'alert-danger';
+    const alertHtml = `
+        <div class="alert ${alertClass} alert-dismissible fade show position-fixed" 
+             style="top: 20px; right: 20px; z-index: 9999;" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    `;
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
+    
+    // 3秒後に自動で削除
+    setTimeout(() => {
+        const alert = document.querySelector('.alert');
+        if (alert) {
+            alert.remove();
+        }
+    }, 3000);
+}
+
+// サイドバーアイテムにイベントリスナーを追加
+document.addEventListener('DOMContentLoaded', function() {
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(item => {
+        item.addEventListener('dragleave', handleDragLeave);
+    });
+    
+    // 検索機能の初期化
+    initializeSearch();
+    initializeBulkActions();
+});
+
+// 検索機能の初期化
+function initializeSearch() {
+    const searchInput = document.getElementById('globalSearch');
+    const clearButton = document.getElementById('clearSearch');
+    const sortBy = document.getElementById('sortBy');
+    const sortOrder = document.getElementById('sortOrder');
+    const toggleFilters = document.getElementById('toggleFilters');
+    const advancedFilters = document.getElementById('advancedFilters');
+    
+    let searchTimeout;
+    
+    // 検索入力
+    searchInput.addEventListener('input', function() {
+        const query = this.value.trim();
+        
+        if (query) {
+            clearButton.style.display = 'block';
+        } else {
+            clearButton.style.display = 'none';
+        }
+        
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            performSearch();
+        }, 300);
+    });
+    
+    // 検索クリア
+    clearButton.addEventListener('click', function() {
+        searchInput.value = '';
+        clearButton.style.display = 'none';
+        performSearch();
+    });
+    
+    // ソート変更
+    sortBy.addEventListener('change', performSearch);
+    sortOrder.addEventListener('change', performSearch);
+    
+    // フィルタ切り替え
+    toggleFilters.addEventListener('click', function() {
+        if (advancedFilters.style.display === 'none') {
+            advancedFilters.style.display = 'block';
+            this.classList.add('active');
+        } else {
+            advancedFilters.style.display = 'none';
+            this.classList.remove('active');
+        }
+    });
+    
+    // 高度フィルタ
+    const filterInputs = advancedFilters.querySelectorAll('select, input');
+    filterInputs.forEach(input => {
+        input.addEventListener('change', performSearch);
+    });
+}
+
+// 検索実行
+async function performSearch() {
+    const searchInput = document.getElementById('globalSearch');
+    const sortBy = document.getElementById('sortBy');
+    const sortOrder = document.getElementById('sortOrder');
+    const filterFolder = document.getElementById('filterFolder');
+    const filterDateFrom = document.getElementById('filterDateFrom');
+    const filterDateTo = document.getElementById('filterDateTo');
+    const filterHasImage = document.getElementById('filterHasImage');
+    
+    const searchParams = {
+        query: searchInput.value.trim(),
+        sort_by: sortBy.value,
+        sort_order: sortOrder.value,
+        folder_id: filterFolder.value,
+        date_from: filterDateFrom.value,
+        date_to: filterDateTo.value,
+        has_image: filterHasImage.value,
+        page: 1,
+        per_page: 50
+    };
+    
+    try {
+        showLoadingState();
+        
+        const response = await fetch('/api/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(searchParams)
+        });
+        
+        if (response.ok) {
+            const result = await response.json();
+            if (result.success) {
+                updateCompoundGrid(result.compounds);
+                updateCompoundCount(result.pagination.total);
+            } else {
+                showNotification('Search error: ' + result.error, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Search error:', error);
+        showNotification('Error occurred during search', 'error');
+    } finally {
+        hideLoadingState();
+    }
+}
+
+// 化合物グリッドの更新
+function updateCompoundGrid(compounds) {
+    const contentBody = document.querySelector('.content-body');
+    
+    if (compounds.length === 0) {
+        contentBody.innerHTML = `
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
+                    </svg>
+                </div>
+                <h4 class="empty-state-title">No search results found</h4>
+                <p class="empty-state-text">
+                    Please try changing your search criteria.
+                </p>
+            </div>
+        `;
+        return;
+    }
+    
+    const gridHtml = `
+        <div class="row g-4">
+            ${compounds.map(compound => `
+                <div class="col-md-6 col-lg-4 col-xl-3">
+                    <div class="card h-100 compound-card" 
+                         draggable="true"
+                         data-compound-id="${compound.id}"
+                         ondragstart="handleCompoundDragStart(event)"
+                         ondragend="handleCompoundDragEnd(event)"
+                         onclick="window.location.href='/compound/${compound.id}'">
+                        
+                        <div class="selection-checkbox">
+                            <input type="checkbox" class="form-check-input" 
+                                   data-compound-id="${compound.id}"
+                                   onclick="event.stopPropagation(); toggleCompoundSelection(this)">
+                        </div>
+                        
+                        ${compound.structure_image ? 
+                            `<img src="/structure_image/${compound.structure_image.split('/').pop()}" 
+                                 class="compound-structure" alt="${compound.name} structure">` :
+                            `<div class="structure-placeholder">
+                                <div class="placeholder-text">
+                                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                                        <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093L6.52 9.773l-2.292-2.292a.5.5 0 0 0-.63-.062L1.002 9v-6a1 1 0 0 1 1-1h12z"/>
+                                    </svg>
+                                    No Structure
+                                </div>
+                            </div>`
+                        }
+                        
+                        <div class="card-body d-flex flex-column">
+                            <h5 class="card-title" title="${compound.name}">${compound.name}</h5>
+                            
+                            ${compound.folder_name ? 
+                                `<p class="project-name">${compound.folder_name}</p>` : ''
+                            }
+                            
+                            <div class="flex-grow-1">
+                                ${compound.molecular_formula ? 
+                                    `<p class="card-text">
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M12.17 9.53c2.307-2.592 3.278-4.684 3.641-6.218.21-.887.214-1.58.16-2.065a3.578 3.578 0 0 0-.108-.563"/>
+                                        </svg>
+                                        ${compound.molecular_formula}
+                                    </p>` : ''
+                                }
+                                
+                                ${compound.molecular_weight ? 
+                                    `<p class="card-text">
+                                        <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                            <path d="M4 11.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5z"/>
+                                        </svg>
+                                        Molecular Weight: ${compound.molecular_weight}
+                                    </p>` : ''
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    contentBody.innerHTML = gridHtml;
+}
+
+// 化合物数の更新
+function updateCompoundCount(count) {
+    const countElement = document.getElementById('compoundCount');
+    if (countElement) {
+        countElement.textContent = `${count} compounds`;
+    }
+}
+
+// ローディング状態の表示/非表示
+function showLoadingState() {
+    const contentBody = document.querySelector('.content-body');
+    contentBody.style.position = 'relative';
+    
+    const loadingOverlay = document.createElement('div');
+    loadingOverlay.className = 'loading-overlay';
+    loadingOverlay.innerHTML = '<div class="loading-spinner"></div>';
+    
+    contentBody.appendChild(loadingOverlay);
+}
+
+function hideLoadingState() {
+    const loadingOverlay = document.querySelector('.loading-overlay');
+    if (loadingOverlay) {
+        loadingOverlay.remove();
+    }
+}
+
+// 一括操作機能の初期化
+function initializeBulkActions() {
+    const selectAllToggle = document.getElementById('selectAllToggle');
+    const bulkActions = document.getElementById('bulkActions');
+    const bulkMove = document.getElementById('bulkMove');
+    const bulkExport = document.getElementById('bulkExport');
+    const bulkDelete = document.getElementById('bulkDelete');
+    
+    selectAllToggle.addEventListener('click', toggleSelectAll);
+    bulkMove.addEventListener('click', showBulkMoveModal);
+    bulkExport.addEventListener('click', performBulkExport);
+    bulkDelete.addEventListener('click', performBulkDelete);
+}
+
+// 化合物選択の切り替え
+function toggleCompoundSelection(checkbox) {
+    const card = checkbox.closest('.compound-card');
+    const bulkActions = document.getElementById('bulkActions');
+    
+    if (checkbox.checked) {
+        card.classList.add('selected');
+    } else {
+        card.classList.remove('selected');
+    }
+    
+    // 選択状態の更新
+    updateBulkActionVisibility();
+}
+
+// 全選択の切り替え
+function toggleSelectAll() {
+    const checkboxes = document.querySelectorAll('.compound-card .selection-checkbox input[type="checkbox"]');
+    const selectAllToggle = document.getElementById('selectAllToggle');
+    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = !allChecked;
+        toggleCompoundSelection(checkbox);
+    });
+    
+    selectAllToggle.textContent = allChecked ? 'Select All' : 'Deselect All';
+}
+
+// 一括操作ボタンの表示/非表示
+function updateBulkActionVisibility() {
+    const selectedCount = document.querySelectorAll('.compound-card.selected').length;
+    const bulkActions = document.getElementById('bulkActions');
+    const selectAllToggle = document.getElementById('selectAllToggle');
+    
+    if (selectedCount > 0) {
+        bulkActions.style.display = 'block';
+        selectAllToggle.innerHTML = `
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+            </svg>
+            Deselect (${selectedCount})
+        `;
+    } else {
+        bulkActions.style.display = 'none';
+        selectAllToggle.innerHTML = `
+            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                <path d="M2.5 8a5.5 5.5 0 0 1 11 0 .5.5 0 0 0 1 0 6.5 6.5 0 1 0-13 0 .5.5 0 0 0 1 0z"/>
+                <path d="M7.394 6.813a.5.5 0 1 0-.788.624l2.5 3.126a.5.5 0 0 0 .79-.004l5-6.25a.5.5 0 1 0-.792-.634L9.5 9.367 7.394 6.813z"/>
+            </svg>
+            Select All
+        `;
+    }
+}
+
+// 一括移動
+function showBulkMoveModal() {
+    const selectedIds = getSelectedCompoundIds();
+    if (selectedIds.length === 0) return;
+    
+    // モーダルHTML作成
+    const modalHtml = `
+        <div class="modal fade" id="bulkMoveModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Bulk Move Compounds</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Move ${selectedIds.length} compounds.</p>
+                        <div class="mb-3">
+                            <label for="bulkMoveFolder" class="form-label">Destination Folder</label>
+                            <select class="form-select" id="bulkMoveFolder">
+                                <option value="">Uncategorized</option>
+                                ${renderFolderOptions()}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="performBulkMove()">Move</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // モーダルを追加して表示
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('bulkMoveModal'));
+    modal.show();
+    
+    // モーダルが閉じられたら削除
+    document.getElementById('bulkMoveModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// フォルダオプションを生成
+function renderFolderOptions() {
+    // TODO: 動的にフォルダツリーを取得
+    return '';
+}
+
+// 一括移動実行
+async function performBulkMove() {
+    const selectedIds = getSelectedCompoundIds();
+    const folderId = document.getElementById('bulkMoveFolder').value || null;
+    
+    try {
+        const response = await fetch('/api/bulk-move', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                compound_ids: selectedIds,
+                folder_id: folderId
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            showNotification(result.message, 'success');
+            // モーダルを閉じる
+            bootstrap.Modal.getInstance(document.getElementById('bulkMoveModal')).hide();
+            // ページをリロード
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showNotification('Move error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Bulk move error:', error);
+        showNotification('Error occurred during move', 'error');
+    }
+}
+
+// 一括エクスポート
+function performBulkExport() {
+    const selectedIds = getSelectedCompoundIds();
+    if (selectedIds.length === 0) return;
+    
+    // エクスポート形式選択モーダル
+    const modalHtml = `
+        <div class="modal fade" id="bulkExportModal" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Bulk Export Compounds</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Export ${selectedIds.length} compounds.</p>
+                        <div class="mb-3">
+                            <label for="exportFormat" class="form-label">Export Format</label>
+                            <select class="form-select" id="exportFormat">
+                                <option value="csv">CSV Format</option>
+                                <option value="json">JSON Format</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary" onclick="executeBulkExport()">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    const modal = new bootstrap.Modal(document.getElementById('bulkExportModal'));
+    modal.show();
+    
+    document.getElementById('bulkExportModal').addEventListener('hidden.bs.modal', function() {
+        this.remove();
+    });
+}
+
+// 一括エクスポート実行
+async function executeBulkExport() {
+    const selectedIds = getSelectedCompoundIds();
+    const format = document.getElementById('exportFormat').value;
+    
+    try {
+        const response = await fetch('/api/bulk-export', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                compound_ids: selectedIds,
+                format: format
+            })
+        });
+        
+        if (response.ok) {
+            // ファイルダウンロード
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = format === 'json' ? 'compounds_export.json' : 'compounds_export.csv';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+            
+            showNotification(`${selectedIds.length} compounds exported successfully`, 'success');
+            bootstrap.Modal.getInstance(document.getElementById('bulkExportModal')).hide();
+        } else {
+            const result = await response.json();
+            showNotification('Export error: ' + result.error, 'error');
+        }
+    } catch (error) {
+        console.error('Bulk export error:', error);
+        showNotification('Error occurred during export', 'error');
+    }
+}
+
+// 一括削除
+async function performBulkDelete() {
+    const selectedIds = getSelectedCompoundIds();
+    if (selectedIds.length === 0) return;
+    
+    if (confirm(`Delete ${selectedIds.length} selected compounds? This action cannot be undone.`)) {
+        try {
+            const response = await fetch('/api/bulk-delete', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    compound_ids: selectedIds
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                showNotification(result.message, 'success');
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            } else {
+                showNotification('Delete error: ' + result.error, 'error');
+            }
+        } catch (error) {
+            console.error('Bulk delete error:', error);
+            showNotification('Error occurred during delete', 'error');
+        }
+    }
+}
+
+// 選択された化合物IDを取得
+function getSelectedCompoundIds() {
+    const selectedCards = document.querySelectorAll('.compound-card.selected');
+    return Array.from(selectedCards).map(card => 
+        parseInt(card.dataset.compoundId)
+    );
+}
+</script>
+{% endblock %}

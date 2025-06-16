@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">
+        <span class="text-gradient">新しいフォルダを作成</span>
+    </h1>
+    <p class="page-subtitle">化合物を整理するためのフォルダを作成します</p>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                            </svg>
+                            フォルダ名 <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="例: メチル置換体、ハロゲン化合物、プロジェクトA">
+                        <div class="form-text">わかりやすい名前を付けてください</div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="parent_id" class="form-label">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M8 0a8 8 0 1 0 0 16A8 8 0 0 0 8 0zM4.5 7.5a.5.5 0 0 1 0-1h5.793L8.146 4.354a.5.5 0 1 1 .708-.708l3 3a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708-.708L10.293 7.5H4.5z"/>
+                            </svg>
+                            親フォルダ (オプション)
+                        </label>
+                        <select class="form-select" id="parent_id" name="parent_id">
+                            <option value="">なし（ルートフォルダ）</option>
+                            {% for folder in folders %}
+                            <option value="{{ folder.id }}">{{ folder.get_path() }}</option>
+                            {% endfor %}
+                        </select>
+                        <div class="form-text">階層構造を作る場合は親フォルダを選択してください</div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('main.folders') }}" class="btn btn-outline-secondary">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
+                            </svg>
+                            キャンセル
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                                <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                            </svg>
+                            フォルダを作成
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
