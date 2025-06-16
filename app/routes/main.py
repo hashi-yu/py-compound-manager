@@ -439,6 +439,12 @@ def submit_feedback():
                 'error': 'Required fields are missing'
             }), 400
         
+        # 入力値のサニタイズ
+        import html
+        subject = html.escape(subject[:100])  # 最大100文字
+        message = html.escape(message[:1000])  # 最大1000文字
+        user_email = html.escape(user_email[:100]) if user_email else None
+        
         # システム情報をパース
         try:
             system_data = json.loads(system_info) if system_info else {}
@@ -561,6 +567,13 @@ Compound Management System
 @main_bp.route('/admin/feedback')
 def view_feedback():
     """フィードバック管理画面（開発者用）"""
+    # 簡易認証チェック
+    admin_key = request.args.get('key')
+    expected_key = os.environ.get('ADMIN_KEY', 'default-admin-key-change-this')
+    
+    if admin_key != expected_key:
+        flash('Unauthorized access. Contact the administrator.', 'error')
+        return redirect(url_for('main.index'))
     try:
         feedback_dir = os.path.join(current_app.instance_path, 'feedback')
         feedbacks = []
