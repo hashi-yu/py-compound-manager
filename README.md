@@ -1,297 +1,229 @@
-# 化合物データ管理システム
+# 🧪 Compound Management System v2.0
 
-研究用の化合物データを効率的に管理するためのWebアプリケーションです。化合物の構造式、分子情報、スペクトルデータ（NMR、IR、MS、HPLC等）を一元管理し、プロジェクトごとに分類できます。
+> A modern, Apple-inspired chemical compound database system with advanced molecular weight calculations and project management capabilities.
 
-**🆕 v2.0 新機能**: 高精度分子量自動計算システム・モダンUIデザイン
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.8+-green.svg)
+![Flask](https://img.shields.io/badge/flask-2.3+-orange.svg)
 
-## 🚀 主要機能
+## ✨ Features
 
-### 💡 **高精度分子量自動計算システム**
-- **ChemDraw互換**: 業界標準ソフトウェアと同等の精度
-- **リアルタイム計算**: 分子式入力時の自動分子量計算（小数点2桁精度）
-- **分子式検証**: 入力即座の妥当性チェック・視覚フィードバック
-- **多段階計算**: PubChem API → 標準原子量 → フォールバック
-- **対応範囲**: 基本化合物・水和物・錯体・全元素対応
+### 🔬 **Compound Management**
+- Add, edit, and organize chemical compounds
+- Upload molecular structure images
+- Automatic molecular weight calculation
+- Real-time molecular formula validation
+- Notes and comments system
 
-### 🎨 **モダンUIデザイン**
-- **デザインシステム**: 統一されたカラーパレット・タイポグラフィ
-- **3Dインタラクション**: カードホバーエフェクト・マイクロアニメーション
-- **グラデーション**: 美しいグラデーションナビゲーション・ボタン
-- **レスポンシブ**: 完全モバイル対応・タッチ操作最適化
+### 📊 **Project Organization**
+- Group compounds by research projects
+- Project statistics and overview
+- Advanced filtering and search
+- Export functionality
 
-## 技術スタック
+### 🎨 **Modern User Interface**
+- Apple-inspired design system
+- Responsive layout for all devices
+- Real-time form validation
+- Intuitive navigation
 
-- **Backend**: Python 3.12, Flask 2.3.3
-- **Database**: SQLite (SQLAlchemy ORM)
-- **Frontend**: HTML5, Bootstrap 5.1.3, JavaScript ES6+
-- **APIs**: PubChem REST API, カスタム計算エンジン
-- **計算精度**: NIST標準原子量データベース
-- **File Upload**: Werkzeug
-- **Image Processing**: Pillow
+### ⚡ **Advanced Features**
+- High-precision molecular weight calculation
+- Image preview and management
+- Data backup and restore
+- Multi-format file support
 
-## 機能概要
+## 🚀 Quick Start
 
-### ✅ 実装済み機能
+### Simple Installation
 
-#### 🧪 **高精度分子量計算システム（v2.0新機能）**
-- **自動計算**: 分子式入力時の瞬時分子量計算（0.5秒遅延）
-- **ChemDraw互換精度**: 小数点2桁・標準原子量データベース使用
-- **リアルタイム検証**: 分子式妥当性の即座チェック・視覚フィードバック
-- **多段階計算**: PubChem API → ローカル高精度計算 → エラーハンドリング
-- **水和物対応**: CuSO4·5H2O等の複合体計算
-- **全元素対応**: 周期表118元素完全対応
-- **API統合**: 3つの専用APIエンドポイント
+1. **Download**: Download ZIP from GitHub or `git clone`
+2. **Requirements**: Python 3.8+ only
+3. **Launch**: Double-click `start.command` (macOS/Linux)
+4. **Access**: http://localhost:8081
 
-#### 🎨 **モダンUIデザイン（v2.0大幅改善）**
-- **デザインシステム**: CSS変数による統一カラーパレット・間隔システム
-- **カード型UI**: 3Dホバーエフェクト・多層シャドウ・スムーズアニメーション
-- **グラデーション**: 美しいナビゲーション・ボタングラデーション
-- **レスポンシブ強化**: モバイルファースト・タッチ操作最適化
-- **視覚的フィードバック**: 精度表示・リアルタイム検証・マイクロインタラクション
+**One-click setup** - All dependencies installed automatically!
 
-#### 📊 **化合物管理**
-- **化合物登録**: 名前、分子式、分子量、構造式画像、メモの登録
-- **スマート入力**: 分子式入力時の自動分子量計算・検証
-- **化合物編集**: 全情報の更新・分子式変更時の自動再計算
-- **化合物削除**: 化合物本体とすべての関連データの完全削除
-- **化合物一覧**: 改良されたカード形式・視覚的一覧表示
+## 📖 Detailed Installation
 
-#### 📁 **プロジェクト管理**
-- **プロジェクト作成**: プロジェクト名と説明で分類を作成
-- **プロジェクト編集**: プロジェクト情報の更新
-- **プロジェクト削除**: プロジェクト削除（関連化合物は未分類になる）
-- **プロジェクト別表示**: 改良されたフィルタリング・ドロップダウン
+### Step-by-Step Setup
 
-#### 📈 **スペクトルデータ管理**
-- **対応データ種類**: 1H NMR, 13C NMR, IR, MS, HPLC, その他
-- **ファイルアップロード**: 各種スペクトルデータファイルの保存
-- **ファイルダウンロード**: アップロードしたデータの取得
-- **データ削除**: 不要なスペクトルデータの削除
+1. **Create Virtual Environment**
+   ```bash
+   python -m venv venv
+   
+   # Activate
+   source venv/bin/activate  # macOS/Linux
+   venv\Scripts\activate     # Windows
+   ```
 
-#### 🖼️ **構造式管理**
-- **画像アップロード**: PNG, JPG, JPEG, GIF形式の構造式画像
-- **改良プレビュー**: 美しいプレースホルダー・即座プレビュー
-- **画像表示**: 一覧および詳細画面での構造式表示
-- **画像更新**: 既存画像の置き換え
-- **画像削除**: 構造式画像の削除
+2. **Install Dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-## データベース設計
+3. **Initialize Database**
+   ```bash
+   python -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"
+   ```
 
-### テーブル構成
+4. **Run Application**
+   ```bash
+   python run.py
+   ```
 
-#### Project（プロジェクト）
-- `id`: 主キー
-- `name`: プロジェクト名（必須）
-- `description`: 説明（任意）
-- `created_date`: 作成日時
-- `updated_date`: 更新日時
+## 🛠 Configuration
 
-#### Compound（化合物）
-- `id`: 主キー
-- `name`: 化合物名（必須）
-- `molecular_formula`: 分子式（任意）
-- `molecular_weight`: 分子量（任意）
-- `structure_image`: 構造式画像パス（任意）
-- `notes`: メモ（任意）
-- `project_id`: プロジェクト外部キー（任意）
-- `created_date`: 作成日時
-- `updated_date`: 更新日時
+### Environment Variables
+Copy `.env.example` to `.env` and customize:
 
-#### SpectralData（スペクトルデータ）
-- `id`: 主キー
-- `compound_id`: 化合物外部キー（必須）
-- `data_type`: データ種類（1H NMR, 13C NMR等）
-- `filename`: 保存ファイル名
-- `original_filename`: 元ファイル名
-- `file_path`: ファイルパス
-- `notes`: メモ（任意）
-- `upload_date`: アップロード日時
+```env
+# Security
+SECRET_KEY=your-secret-key-here
 
-## プロジェクト構造
+# Database
+DATABASE_URL=sqlite:///instance/compounds.db
+
+# File Uploads
+MAX_CONTENT_LENGTH=16777216
+
+# Server
+HOST=127.0.0.1
+PORT=8081
+```
+
+## 📱 Usage Guide
+
+### Adding Compounds
+1. Click **"Add Compound"**
+2. Enter compound name and molecular formula
+3. Upload structure image (optional)
+4. Assign to project (optional)
+5. Add notes and save
+
+### Managing Projects
+1. Navigate to **"Projects"**
+2. Create new projects or edit existing ones
+3. View project statistics
+4. Organize compounds by research areas
+
+### Molecular Weight Calculation
+- Enter molecular formula (e.g., `C6H6`)
+- System automatically calculates molecular weight
+- Real-time validation provides feedback
+- High-precision calculations with confidence levels
+
+## 📁 Project Structure
 
 ```
 py-compound-manager/
-├── app/
-│   ├── __init__.py              # Flaskアプリケーション初期化
-│   ├── models/                  # データモデル
-│   │   ├── __init__.py
-│   │   ├── compound.py          # 化合物・スペクトルデータモデル
-│   │   └── project.py           # プロジェクトモデル
-│   ├── routes/                  # ルーティング
-│   │   ├── __init__.py
-│   │   └── main.py              # メインルート（全機能）
-│   ├── static/                  # 静的ファイル
-│   │   └── css/
-│   │       └── style.css        # カスタムCSS
-│   ├── templates/               # テンプレート
-│   │   ├── base.html            # ベーステンプレート
-│   │   ├── index.html           # ホーム画面
-│   │   ├── add_compound.html    # 化合物登録
-│   │   ├── edit_compound.html   # 化合物編集
-│   │   ├── compound_detail.html # 化合物詳細
-│   │   ├── projects.html        # プロジェクト一覧
-│   │   ├── add_project.html     # プロジェクト登録
-│   │   └── edit_project.html    # プロジェクト編集
-│   └── uploads/                 # アップロードファイル
-│       ├── structures/          # 構造式画像
-│       └── data/                # スペクトルデータ
-├── config/
-│   └── config.py                # アプリケーション設定
-├── requirements.txt             # Python依存関係
-├── run.py                       # アプリケーション起動
-├── .env.example                 # 環境変数例
-├── .gitignore                   # Git除外設定
-└── README.md                    # このファイル
+├── app/                    # Main application
+│   ├── models/            # Database models (Compound, Project)
+│   ├── routes/            # URL routes and API endpoints
+│   ├── templates/         # HTML templates
+│   ├── static/           # CSS, JavaScript, images
+│   └── uploads/          # User uploaded files
+├── config/               # Configuration files
+├── instance/             # Database and instance files
+├── requirements.txt      # Python dependencies
+├── run.py               # Application entry point
+├── setup.sh             # Setup script (Unix)
+├── setup_windows.bat    # Setup script (Windows)
+└── README.md            # This file
 ```
 
-## セットアップ手順
+## 🔧 API Endpoints
 
-### 1. 環境準備
+### Compounds
+- `GET /` - List all compounds
+- `GET /compound/<id>` - View compound details
+- `POST /add` - Add new compound
+- `POST /edit/<id>` - Edit compound
 
-```bash
-# リポジトリクローン
-git clone <repository-url>
-cd py-compound-manager
+### Projects
+- `GET /projects` - List all projects
+- `POST /add_project` - Add new project
+- `POST /edit_project/<id>` - Edit project
 
-# 仮想環境作成・有効化
-python -m venv venv
-source venv/bin/activate  # macOS/Linux
-# または
-venv\Scripts\activate     # Windows
+### API
+- `POST /api/calculate-molecular-weight` - Calculate molecular weight
+- `POST /api/validate-molecular-formula` - Validate formula
 
-# 依存関係インストール
-pip install -r requirements.txt
-```
+## 🚀 Deployment
 
-### 2. 環境変数設定（任意）
-
-```bash
-# .envファイル作成（.env.exampleを参考）
-cp .env.example .env
-```
-
-### 3. アプリケーション起動
-
+### Development
 ```bash
 python run.py
 ```
 
-アプリケーションが `http://localhost:8081` で起動します。
-
-## 🎯 使用方法
-
-### 💡 **v2.0新機能: スマート化合物登録**
-
-1. **高精度分子量自動計算**
-   - 分子式フィールドに `C6H6` と入力
-   - 0.5秒後に自動で分子量 `78.11` が計算・表示
-   - 枠線色で計算精度をリアルタイム表示（緑=高精度、青=標準、黄=推定）
-
-2. **リアルタイム分子式検証**
-   - 無効な分子式は即座に赤枠で警告
-   - 有効な分子式は緑枠で確認
-   - ツールチップで詳細情報表示
-
-### 📋 **基本的なワークフロー**
-
-1. **プロジェクト作成**
-   - ナビゲーション「プロジェクト」→「新しいプロジェクトを追加」
-   - プロジェクト名と説明を入力
-
-2. **スマート化合物登録（改良版）**
-   - 「化合物追加」をクリック
-   - **分子式入力**: 例 `H2O` → 自動で分子量 `18.02` 計算
-   - **化合物名・プロジェクト選択**: 必要に応じて設定
-   - **構造式画像**: 改良されたプレビュー付きアップロード
-
-3. **スペクトルデータ追加**
-   - 化合物詳細画面で「データアップロード」
-   - データ種類を選択してファイルをアップロード
-
-4. **プロジェクト別表示**
-   - ホーム画面の改良されたフィルターで絞り込み
-
-## 📈 開発履歴
-
-### v2.0.0 - 高精度計算システム・モダンUIデザイン (コミット: 08f7ce2) 🆕
-- **高精度分子量自動計算システム**: ChemDraw互換・小数点2桁精度
-- **NIST標準原子量データベース**: 118元素完全対応
-- **多段階計算システム**: PubChem API + ローカル計算エンジン
-- **リアルタイム分子式検証**: 即座検証・視覚フィードバック
-- **モダンUIデザイン**: CSS変数・グラデーション・3Dエフェクト
-- **カード型UI改善**: ホバーエフェクト・シャドウ・アニメーション
-- **レスポンシブ強化**: モバイルファースト・タッチ最適化
-- **API機能**: 3つの専用エンドポイント追加
-- **水和物・錯体対応**: CuSO4·5H2O等の高度計算
-
-### v1.1.0 - プロジェクト機能追加 (コミット: 4ceff99)
-- プロジェクトモデルの追加
-- 化合物のプロジェクト分類機能
-- プロジェクト管理UI
-- フィルタリング機能
-
-### v1.0.0 - 初期実装 (コミット: 8eda9d8)
-- 基本的な化合物管理機能
-- 構造式画像機能
-- スペクトルデータ管理
-- CRUD操作の完全実装
-
-## 今後の拡張可能性
-
-### 提案される機能
-
-#### 検索・フィルタリング強化
-- [ ] 化合物名での部分一致検索
-- [ ] 分子式・分子量範囲での検索
-- [ ] 複合条件での詳細検索
-
-#### データ分析機能
-- [ ] プロジェクト統計情報
-- [ ] スペクトルデータ統計
-- [ ] エクスポート機能（CSV、PDF）
-
-#### ユーザー管理
-- [ ] ユーザー認証システム
-- [ ] プロジェクトアクセス権限管理
-- [ ] ユーザー別履歴管理
-
-#### データ拡張
-- [ ] 化合物の物理的性質データ
-- [ ] 実験ノート機能
-- [ ] 化学反応情報
-
-#### UI/UX改善
-- [ ] ダークモード対応
-- [ ] ドラッグ&ドロップアップロード
-- [ ] 高度な画像表示機能
-
-## ライセンス
-
-このプロジェクトは研究・教育目的で開発されました。
-
-## 技術サポート
-
-### 依存関係更新
-
+### Production (Gunicorn)
 ```bash
-pip freeze > requirements.txt
+pip install gunicorn
+gunicorn -w 4 -b 0.0.0.0:8081 "app:create_app()"
 ```
 
-### データベース操作
-
+### Docker
 ```bash
-# データベースリセット（開発時のみ）
-rm -f instance/compounds.db
-python -c "from run import app, db; app.app_context().push(); db.create_all()"
+docker build -t compound-manager .
+docker run -p 8081:8081 compound-manager
 ```
 
-### 開発時の注意事項
+## 🤝 Contributing
 
-- アップロードファイルは `.gitignore` で除外済み
-- 本番環境では `SECRET_KEY` とデータベース設定を変更すること
-- SQLiteは開発用途、本番ではPostgreSQL等を推奨
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🆘 Support
+
+### Troubleshooting
+
+**Port already in use:**
+```bash
+# Kill process using port 8081
+lsof -ti:8081 | xargs kill -9
+```
+
+**Database issues:**
+```bash
+# Reset database
+rm instance/compounds.db
+python -c "from app import create_app, db; app = create_app(); app.app_context().push(); db.create_all()"
+```
+
+**Dependencies issues:**
+```bash
+# Reinstall dependencies
+pip install --upgrade -r requirements.txt
+```
+
+### Getting Help
+- Create an issue on GitHub
+- Check the [Security Guide](SECURITY.md)
+- Review application logs
+
+## 🎯 Roadmap
+
+- [ ] Advanced search and filtering
+- [ ] Data export to multiple formats
+- [ ] Integration with chemical databases
+- [ ] Collaborative features
+- [ ] Mobile application
+- [ ] Advanced molecular visualization
+
+## 🏆 Acknowledgments
+
+- Built with Flask and SQLAlchemy
+- UI inspired by Apple's design principles
+- Molecular weight calculations using scientific databases
+- Community contributions and feedback
 
 ---
 
-**最終更新**: 2025年6月14日  
-**開発者**: Claude Code Assistant
+**Happy researching! 🧬**
