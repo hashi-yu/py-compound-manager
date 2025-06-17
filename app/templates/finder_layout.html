@@ -40,8 +40,10 @@
                 {% for item in folders %}
                     <div class="sidebar-item {% if current_folder and current_folder.id == item.folder.id %}active{% endif %}" 
                          data-folder-id="{{ item.folder.id }}" 
+                         data-folder-name="{{ item.folder.name }}"
                          style="padding-left: {{ 12 + (level * 20) }}px;"
                          onclick="navigateToFolder({{ item.folder.id }})"
+                         oncontextmenu="showFolderContextMenu(event, {{ item.folder.id }}, '{{ item.folder.name }}')"
                          ondrop="handleDrop(event, {{ item.folder.id }})" 
                          ondragover="handleDragOver(event)">
                         <div class="sidebar-item-content">
@@ -58,7 +60,11 @@
                             <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
                                 <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
                             </svg>
-                            <span class="sidebar-item-text">{{ item.folder.name }}</span>
+                            <span class="sidebar-item-text" id="folder-name-{{ item.folder.id }}">{{ item.folder.name }}</span>
+                            <input type="text" class="folder-name-input" id="folder-input-{{ item.folder.id }}" 
+                                   value="{{ item.folder.name }}" style="display: none;"
+                                   onblur="saveFolderName({{ item.folder.id }})"
+                                   onkeydown="handleFolderNameKeydown(event, {{ item.folder.id }})">
                             {% if item.total_compound_count > 0 %}
                             <span class="badge bg-primary" title="Direct: {{ item.compound_count }}, Total: {{ item.total_compound_count }}">
                                 {{ item.total_compound_count }}
@@ -251,6 +257,23 @@
                 </div>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- 右クリックメニュー -->
+<div id="folder-context-menu" class="context-menu" style="display: none;">
+    <div class="context-menu-item" onclick="renameFolderInline()">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+            <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L10.5 8.207l-3-3L12.146.146zm-.647 4.646L8.207 7.086 2 13.293V16h2.707l6.293-6.293L8.5 7.207l3-3zM2 16a1 1 0 0 1-1-1v-2.293l1.146-1.147L5.5 14H2v2z"/>
+        </svg>
+        名前を変更
+    </div>
+    <div class="context-menu-divider"></div>
+    <div class="context-menu-item delete" onclick="deleteFolderFromMenu()">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+            <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Zm1.958 1-.846 10.58a1 1 0 0 1-.997.92h-6.23a1 1 0 0 1-.997-.92L3.042 3.5h9.916Zm-7.487 1a.5.5 0 0 1 .528.47l.5 8.5a.5.5 0 0 1-.998.06L5 5.03a.5.5 0 0 1 .47-.53Zm5.058 0a.5.5 0 0 1 .47.53l-.5 8.5a.5.5 0 1 1-.998-.06l.5-8.5a.5.5 0 0 1 .528-.47ZM8 4.5a.5.5 0 0 1 .5.5v8.5a.5.5 0 0 1-1 0V5a.5.5 0 0 1 .5-.5Z"/>
+        </svg>
+        削除
     </div>
 </div>
 
@@ -1094,8 +1117,127 @@
     background: #ffffff;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     transition: box-shadow 0.2s ease;
-    overflow: hidden;
+    overflow: visible;
     cursor: pointer;
+    position: relative;
+}
+
+.compound-card .dropdown-menu {
+    z-index: 1050;
+}
+
+/* フォルダカード用のドロップダウン修正 */
+.card {
+    overflow: visible !important;
+    position: relative;
+}
+
+.card .dropdown-menu {
+    z-index: 9999 !important;
+    min-width: 160px;
+    position: fixed !important;
+    transform: none !important;
+    margin-top: 5px;
+}
+
+.card .dropdown-menu.dropdown-menu-end {
+    right: 0;
+    left: auto;
+}
+
+.row {
+    overflow: visible !important;
+}
+
+.col-md-6, .col-lg-4 {
+    overflow: visible !important;
+}
+
+/* 全ての親コンテナのoverflow解除 */
+.container, .container-fluid {
+    overflow: visible !important;
+}
+
+.content-wrapper {
+    overflow: visible !important;
+}
+
+
+/* 右クリックメニュー */
+.context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 10000;
+    min-width: 160px;
+    padding: 4px 0;
+}
+
+.context-menu-item {
+    padding: 8px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    font-size: 13px;
+    color: #333;
+    transition: background-color 0.2s;
+}
+
+.context-menu-item:hover {
+    background: #f5f5f5;
+}
+
+.context-menu-item.delete {
+    color: #ff3b30;
+}
+
+.context-menu-item.delete:hover {
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.context-menu-divider {
+    height: 1px;
+    background: #e0e0e0;
+    margin: 4px 0;
+}
+
+/* インライン編集入力フィールド */
+.folder-name-input {
+    background: white;
+    border: 1px solid #007AFF;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 13px;
+    font-weight: 500;
+    width: 120px;
+}
+
+.content-body {
+    overflow: visible !important;
+}
+
+.main-content {
+    overflow: visible !important;
+}
+
+/* Bootstrapのカード関連クラスのoverflow解除 */
+.card-body {
+    overflow: visible !important;
+}
+
+.card.h-100 {
+    overflow: visible !important;
+}
+
+/* ドロップダウン表示改善 */
+.dropdown {
+    position: static !important;
+}
+
+.dropdown-toggle::after {
+    display: none;
 }
 
 .compound-card:hover {
@@ -1682,17 +1824,267 @@
 }
 
 /* Removed dark mode to improve performance */
+
+/* ローディングインジケーターのスタイル */
+.loading-indicator {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1000;
+}
+
+.content-body {
+    position: relative;
+}
 </style>
 
 <script>
-function navigateToFolder(folderId) {
-    if (folderId) {
-        window.location.href = '{{ url_for("main.index") }}?folder_id=' + folderId;
-    } else {
-        window.location.href = '{{ url_for("main.index") }}';
+async function navigateToFolder(folderId) {
+    // ローディング状態を表示
+    showLoadingState();
+    
+    // サイドバーのアクティブ状態を更新
+    updateSidebarActiveState(folderId);
+    
+    try {
+        const url = folderId ? 
+            '/api/folder-content?folder_id=' + folderId : 
+            '/api/folder-content';
+        
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        
+        const data = await response.json();
+        if (data.success) {
+            // コンテンツエリアを更新
+            updateMainContent(data);
+            
+            // URLを更新（ページリロードなし）
+            const newUrl = folderId ? 
+                `${window.location.pathname}?folder_id=${folderId}` : 
+                window.location.pathname;
+            window.history.pushState({ folderId }, '', newUrl);
+        } else {
+            throw new Error('API response was not successful');
+        }
+    } catch (error) {
+        console.error('Error loading folder content:', error);
+        // エラー時は従来のページ遷移にフォールバック
+        if (folderId) {
+            window.location.href = '{{ url_for("main.index") }}?folder_id=' + folderId;
+        } else {
+            window.location.href = '{{ url_for("main.index") }}';
+        }
+    } finally {
+        hideLoadingState();
     }
 }
 
+function showLoadingState() {
+    const contentBody = document.querySelector('.content-body');
+    contentBody.style.opacity = '0.6';
+    contentBody.style.pointerEvents = 'none';
+    
+    // ローディングスピナーを表示
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loading-indicator';
+    loadingIndicator.className = 'loading-indicator';
+    loadingIndicator.innerHTML = `
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    `;
+    contentBody.appendChild(loadingIndicator);
+}
+
+function hideLoadingState() {
+    const contentBody = document.querySelector('.content-body');
+    contentBody.style.opacity = '1';
+    contentBody.style.pointerEvents = 'auto';
+    
+    const loadingIndicator = document.getElementById('loading-indicator');
+    if (loadingIndicator) {
+        loadingIndicator.remove();
+    }
+}
+
+function updateSidebarActiveState(folderId) {
+    // すべてのサイドバーアイテムから active クラスを削除
+    document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // 対応するフォルダにactiveクラスを追加
+    if (folderId) {
+        const folderElement = document.querySelector(`[data-folder-id="${folderId}"]`);
+        if (folderElement) {
+            folderElement.classList.add('active');
+        }
+    } else {
+        // All Compounds の場合
+        document.querySelector('.sidebar-item:first-child').classList.add('active');
+    }
+}
+
+function updateMainContent(data) {
+    const contentBody = document.querySelector('.content-body');
+    
+    if (data.subfolders.length === 0 && data.compounds.length === 0) {
+        // 空状態の表示
+        contentBody.innerHTML = generateEmptyStateHTML(data.current_folder);
+    } else {
+        // フォルダとコンパウンドのカードを生成
+        contentBody.innerHTML = generateContentHTML(data.subfolders, data.compounds);
+    }
+}
+
+function generateEmptyStateHTML(currentFolder) {
+    const isFolder = currentFolder && currentFolder.id;
+    return `
+        <div class="empty-state">
+            <div class="empty-state-icon">
+                ${isFolder ? 
+                    '<svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16"><path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/></svg>' :
+                    '<svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16"><path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/><path d="M1.5 2A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h13a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 14.5 2h-13zm13 1a.5.5 0 0 1 .5.5v6l-3.775-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12v.54A.505.505 0 0 1 1 12.5v-9a.5.5 0 0 1 .5-.5h13z"/></svg>'
+                }
+            </div>
+            <h4 class="empty-state-title">
+                ${isFolder ? 'Empty Folder' : 'No Items Found'}
+            </h4>
+            <p class="empty-state-text">
+                ${isFolder ? 
+                    'This folder is empty.<br>Add compounds or create subfolders to organize your data.' :
+                    'No compounds or folders have been created yet.<br>Start by adding your first compound or creating a folder.'
+                }
+            </p>
+            <div class="empty-state-actions">
+                <a href="/add_compound" class="btn btn-primary me-2">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                    </svg>
+                    Add Compound
+                </a>
+                <button class="btn btn-outline-primary" onclick="showNewFolderModal()">
+                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                        <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                    </svg>
+                    Create Folder
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+function generateContentHTML(subfolders, compounds) {
+    let html = '<div class="row g-4">';
+    
+    // サブフォルダカード
+    subfolders.forEach(subfolder => {
+        html += `
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card h-100 folder-card" onclick="navigateToFolder(${subfolder.id})">
+                    <div class="folder-icon-area">
+                        <svg width="64" height="64" fill="currentColor" viewBox="0 0 16 16" class="folder-icon">
+                            <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
+                        </svg>
+                    </div>
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" title="${subfolder.name}">${subfolder.name}</h5>
+                        <div class="flex-grow-1">
+                            <p class="card-text">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                    <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                    <path d="M8 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+                                </svg>
+                                ${subfolder.compound_count} compounds
+                            </p>
+                            <p class="card-text">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12z"/>
+                                </svg>
+                                Updated: ${subfolder.updated_date}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    // 化合物カード
+    compounds.forEach(compound => {
+        const structureImage = compound.structure_image ? 
+            `<img src="/structure_image/${compound.structure_image.split('/').pop()}" class="compound-structure" alt="${compound.name}の構造式">` :
+            `<div class="structure-placeholder">
+                <div class="placeholder-text">
+                    <svg width="20" height="20" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                        <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+                        <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093L6.52 9.773l-2.292-2.292a.5.5 0 0 0-.63-.062L1.002 9v-6a1 1 0 0 1 1-1h12z"/>
+                    </svg>
+                    No Structure
+                </div>
+            </div>`;
+        
+        html += `
+            <div class="col-md-6 col-lg-4 col-xl-3">
+                <div class="card h-100 compound-card" 
+                     draggable="true"
+                     data-compound-id="${compound.id}"
+                     onclick="window.location.href='/compound/${compound.id}'">
+                    
+                    <div class="selection-checkbox">
+                        <input type="checkbox" class="form-check-input" 
+                               data-compound-id="${compound.id}"
+                               onclick="event.stopPropagation(); toggleCompoundSelection(this)">
+                    </div>
+                    
+                    ${structureImage}
+                    
+                    <div class="card-body d-flex flex-column">
+                        <h5 class="card-title" title="${compound.name}">${compound.name}</h5>
+                        
+                        ${compound.folder_name ? `<p class="project-name">${compound.folder_name}</p>` : ''}
+                        
+                        <div class="flex-grow-1">
+                            ${compound.molecular_formula ? 
+                                `<p class="card-text">
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                                        <path d="M8 5a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3z"/>
+                                    </svg>
+                                    ${compound.molecular_formula}
+                                </p>` : ''
+                            }
+                            
+                            ${compound.molecular_weight ? 
+                                `<p class="card-text">
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                        <path d="M4 11.5a.5.5 0 0 1 .5-.5h7a.5.5 0 0 1 0 1h-7a.5.5 0 0 1-.5-.5z"/>
+                                    </svg>
+                                    MW: ${compound.molecular_weight}
+                                </p>` : ''
+                            }
+                            
+                            <p class="card-text">
+                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1">
+                                    <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12z"/>
+                                </svg>
+                                Data: ${compound.spectral_data_count} items
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    return html;
+}
 
 function toggleFolder(event, folderId) {
     event.stopPropagation();
@@ -1721,6 +2113,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const currentFolderId = {{ current_folder.id }};
     expandToFolder(currentFolderId);
     {% endif %}
+    
+    // ブラウザの戻る/進むボタンをサポート
+    window.addEventListener('popstate', function(event) {
+        const params = new URLSearchParams(window.location.search);
+        const folderId = params.get('folder_id');
+        navigateToFolder(folderId ? parseInt(folderId) : null);
+    });
 });
 
 function expandToFolder(folderId) {
@@ -2428,6 +2827,115 @@ function getSelectedCompoundIds() {
     return Array.from(selectedCards).map(card => 
         parseInt(card.dataset.compoundId)
     );
+}
+
+// 右クリックメニュー関連
+let currentContextFolderId = null;
+let currentContextFolderName = null;
+
+function showFolderContextMenu(event, folderId, folderName) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    currentContextFolderId = folderId;
+    currentContextFolderName = folderName;
+    
+    const contextMenu = document.getElementById('folder-context-menu');
+    contextMenu.style.display = 'block';
+    contextMenu.style.left = event.pageX + 'px';
+    contextMenu.style.top = event.pageY + 'px';
+    
+    // 他の場所をクリックしたらメニューを閉じる
+    setTimeout(() => {
+        document.addEventListener('click', hideContextMenu);
+    }, 0);
+}
+
+function hideContextMenu() {
+    const contextMenu = document.getElementById('folder-context-menu');
+    contextMenu.style.display = 'none';
+    document.removeEventListener('click', hideContextMenu);
+}
+
+function renameFolderInline() {
+    hideContextMenu();
+    
+    const nameSpan = document.getElementById(`folder-name-${currentContextFolderId}`);
+    const nameInput = document.getElementById(`folder-input-${currentContextFolderId}`);
+    
+    if (nameSpan && nameInput) {
+        nameSpan.style.display = 'none';
+        nameInput.style.display = 'inline';
+        nameInput.focus();
+        nameInput.select();
+    }
+}
+
+function saveFolderName(folderId) {
+    const nameSpan = document.getElementById(`folder-name-${folderId}`);
+    const nameInput = document.getElementById(`folder-input-${folderId}`);
+    
+    if (nameSpan && nameInput) {
+        const newName = nameInput.value.trim();
+        const originalName = nameSpan.textContent;
+        
+        if (newName && newName !== originalName) {
+            // サーバーに名前変更リクエストを送信
+            fetch(`/edit_folder/${folderId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `name=${encodeURIComponent(newName)}`
+            })
+            .then(response => {
+                if (response.ok) {
+                    nameSpan.textContent = newName;
+                    // サイドバーの属性も更新
+                    const sidebarItem = document.querySelector(`[data-folder-id="${folderId}"]`);
+                    if (sidebarItem) {
+                        sidebarItem.setAttribute('data-folder-name', newName);
+                    }
+                } else {
+                    throw new Error('Failed to update folder name');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('フォルダ名の変更に失敗しました');
+                nameInput.value = originalName;
+            });
+        }
+        
+        nameInput.style.display = 'none';
+        nameSpan.style.display = 'inline';
+    }
+}
+
+function handleFolderNameKeydown(event, folderId) {
+    if (event.key === 'Enter') {
+        event.preventDefault();
+        saveFolderName(folderId);
+    } else if (event.key === 'Escape') {
+        const nameSpan = document.getElementById(`folder-name-${folderId}`);
+        const nameInput = document.getElementById(`folder-input-${folderId}`);
+        
+        nameInput.value = nameSpan.textContent;
+        nameInput.style.display = 'none';
+        nameSpan.style.display = 'inline';
+    }
+}
+
+function deleteFolderFromMenu() {
+    hideContextMenu();
+    
+    if (confirm(`フォルダ「${currentContextFolderName}」を削除しますか？`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = `/delete_folder/${currentContextFolderId}`;
+        document.body.appendChild(form);
+        form.submit();
+    }
 }
 </script>
 {% endblock %}

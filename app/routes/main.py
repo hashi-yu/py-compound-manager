@@ -15,8 +15,6 @@ from datetime import datetime
 main_bp = Blueprint('main', __name__)
 
 def allowed_file(filename):
-    from flask import current_app
-    
     # 拡張子のない特定のファイル名を許可
     allowed_no_extension = {'fid', 'log', 'propcar'}
     if '.' not in filename:
@@ -27,18 +25,6 @@ def allowed_file(filename):
 
 def build_folder_tree():
     """フォルダツリーを構築"""
-    def get_all_descendant_compounds(folder_id):
-        """指定フォルダとその子フォルダ以下のすべての化合物を取得"""
-        compounds = []
-        # 直接の化合物
-        direct_compounds = Compound.query.filter_by(folder_id=folder_id).all()
-        compounds.extend(direct_compounds)
-        # 子フォルダの化合物
-        child_folders = Folder.query.filter_by(parent_id=folder_id).all()
-        for child_folder in child_folders:
-            compounds.extend(get_all_descendant_compounds(child_folder.id))
-        return compounds
-    
     def build_tree(parent_id=None):
         folders = Folder.query.filter_by(parent_id=parent_id).order_by(Folder.name).all()
         tree = []
@@ -70,6 +56,37 @@ def get_all_descendant_compounds(folder_id):
         compounds.extend(get_all_descendant_compounds(child_folder.id))
     return compounds
 
+def _delete_compound_files(compound):
+    """化合物関連ファイルを削除するヘルパー関数"""
+    # 構造式画像ファイル削除
+    if compound.structure_image:
+        structure_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], compound.structure_image)
+        if os.path.exists(structure_file_path):
+            os.remove(structure_file_path)
+    
+    # スペクトルデータファイル削除
+    for spectral_data in compound.spectral_data:
+        data_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], spectral_data.file_path)
+        if os.path.exists(data_file_path):
+            os.remove(data_file_path)
+
+def _process_molecular_data(form_data):
+    """分子量・分子式データを処理するヘルパー関数"""
+    molecular_formula = form_data.get('molecular_formula', '').strip()
+    molecular_weight_str = form_data.get('molecular_weight', '').strip()
+    
+    molecular_weight = None
+    if molecular_weight_str:
+        try:
+            molecular_weight = float(molecular_weight_str)
+        except ValueError:
+            molecular_weight = None
+    
+    return {
+        'molecular_formula': molecular_formula if molecular_formula else None,
+        'molecular_weight': molecular_weight
+    }
+
 @main_bp.route('/')
 def index():
     folder_id = request.args.get('folder_id', type=int)
@@ -96,6 +113,52 @@ def index():
                          current_folder=current_folder,
                          unorganized_count=unorganized_count)
 
+@main_bp.route('/api/folder-content')
+def get_folder_content():
+    """フォルダコンテンツをAJAXで取得するAPI"""
+    folder_id = request.args.get('folder_id', type=int)
+    
+    if folder_id:
+        current_folder = Folder.query.get(folder_id)
+        subfolders = Folder.query.filter_by(parent_id=folder_id).order_by(Folder.name).all()
+        compounds = Compound.query.filter_by(folder_id=folder_id).order_by(Compound.updated_date.desc()).all()
+    else:
+        subfolders = Folder.query.filter_by(parent_id=None).order_by(Folder.name).all()
+        compounds = Compound.query.filter_by(folder_id=None).order_by(Compound.updated_date.desc()).all()
+        current_folder = None
+    
+    # データをJSONで返す
+    subfolder_data = []
+    for subfolder in subfolders:
+        subfolder_data.append({
+            'id': subfolder.id,
+            'name': subfolder.name,
+            'compound_count': len(subfolder.compounds),
+            'updated_date': subfolder.updated_date.strftime('%m/%d')
+        })
+    
+    compound_data = []
+    for compound in compounds:
+        compound_data.append({
+            'id': compound.id,
+            'name': compound.name,
+            'molecular_formula': compound.molecular_formula,
+            'molecular_weight': compound.molecular_weight,
+            'structure_image': compound.structure_image,
+            'folder_name': compound.folder.name if compound.folder else None,
+            'spectral_data_count': len(compound.spectral_data)
+        })
+    
+    return jsonify({
+        'success': True,
+        'current_folder': {
+            'id': current_folder.id if current_folder else None,
+            'name': current_folder.name if current_folder else None
+        },
+        'subfolders': subfolder_data,
+        'compounds': compound_data
+    })
+
 @main_bp.route('/compound/<int:compound_id>')
 def compound_detail(compound_id):
     compound = Compound.query.get_or_404(compound_id)
@@ -105,22 +168,13 @@ def compound_detail(compound_id):
 def add_compound():
     if request.method == 'POST':
         name = request.form['name']
-        molecular_formula = request.form.get('molecular_formula', '').strip()
-        molecular_weight_str = request.form.get('molecular_weight', '').strip()
         notes = request.form.get('notes', '')
         folder_id = request.form.get('folder_id') or None
         
-        # 分子量の処理：空文字列またはNoneの場合はNoneを設定
-        molecular_weight = None
-        if molecular_weight_str:
-            try:
-                molecular_weight = float(molecular_weight_str)
-            except ValueError:
-                molecular_weight = None
-        
-        # 分子式が空文字列の場合はNoneを設定
-        if not molecular_formula:
-            molecular_formula = None
+        # 分子量・分子式の処理（共通ヘルパー関数を使用）
+        molecular_data = _process_molecular_data(request.form)
+        molecular_formula = molecular_data['molecular_formula']
+        molecular_weight = molecular_data['molecular_weight']
         
         compound = Compound(
             name=name,
@@ -210,21 +264,13 @@ def edit_compound(compound_id):
     if request.method == 'POST':
         compound.name = request.form['name']
         
-        molecular_formula = request.form.get('molecular_formula', '').strip()
-        molecular_weight_str = request.form.get('molecular_weight', '').strip()
         compound.notes = request.form.get('notes', '')
         compound.folder_id = request.form.get('folder_id') or None
         
-        # 分子量の処理
-        compound.molecular_weight = None
-        if molecular_weight_str:
-            try:
-                compound.molecular_weight = float(molecular_weight_str)
-            except ValueError:
-                compound.molecular_weight = None
-        
-        # 分子式の処理
-        compound.molecular_formula = molecular_formula if molecular_formula else None
+        # 分子量・分子式の処理（共通ヘルパー関数を使用）
+        molecular_data = _process_molecular_data(request.form)
+        compound.molecular_formula = molecular_data['molecular_formula']
+        compound.molecular_weight = molecular_data['molecular_weight']
         
         # 構造式画像の更新
         if 'structure_image' in request.files:
@@ -287,17 +333,8 @@ def delete_compound(compound_id):
     compound = Compound.query.get_or_404(compound_id)
     compound_name = compound.name  # 削除前に名前を保存
     
-    # 構造式画像ファイルを削除
-    if compound.structure_image:
-        structure_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], compound.structure_image)
-        if os.path.exists(structure_file_path):
-            os.remove(structure_file_path)
-    
-    # 関連するスペクトルデータのファイルを削除
-    for spectral_data in compound.spectral_data:
-        data_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], spectral_data.file_path)
-        if os.path.exists(data_file_path):
-            os.remove(data_file_path)
+    # ファイル削除（共通ヘルパー関数を使用）
+    _delete_compound_files(compound)
     
     # データベースから化合物を削除（関連するスペクトルデータも自動削除される）
     db.session.delete(compound)
@@ -548,17 +585,8 @@ def bulk_delete_compounds():
         deleted_count = 0
         
         for compound in compounds:
-            # ファイル削除
-            if compound.structure_image:
-                structure_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], compound.structure_image)
-                if os.path.exists(structure_file_path):
-                    os.remove(structure_file_path)
-            
-            # スペクトルデータファイル削除
-            for spectral_data in compound.spectral_data:
-                data_file_path = os.path.join(current_app.config['UPLOAD_FOLDER'], spectral_data.file_path)
-                if os.path.exists(data_file_path):
-                    os.remove(data_file_path)
+            # ファイル削除（共通ヘルパー関数を使用）
+            _delete_compound_files(compound)
             
             db.session.delete(compound)
             deleted_count += 1
