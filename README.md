@@ -1,6 +1,6 @@
-# 🧪 Compound Management System v2.1
+# 🧪 Compound Management System v2.2
 
-> A modern, Apple-inspired chemical compound database system with advanced molecular weight calculations, spectral data management, and automated deployment capabilities.
+> A modern, Apple-inspired chemical compound database system with hierarchical folder organization, refined Finder-style interface, and advanced molecular weight calculations.
 
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.8+-green.svg)
@@ -16,17 +16,21 @@
 - Notes and comments system
 - Spectral data file management
 
-### 📊 **Project Organization**
-- Group compounds by research projects
-- Project statistics and overview
-- Advanced filtering and search
-- Export functionality
+### 📁 **Hierarchical Folder System**
+- Create nested folder structures for better organization
+- Finder-style sidebar navigation with refined Apple design
+- Drag-and-drop compound organization
+- Folder-specific compound views (no subfolder mixing)
+- Clean, intuitive folder tree visualization
+- Smart folder badges showing compound counts
 
 ### 🎨 **Modern User Interface**
-- Apple-inspired design system
+- Refined Apple-inspired design system
 - Responsive layout for all devices
+- Enhanced search and local sorting functionality
+- Streamlined controls with better visual hierarchy
 - Real-time form validation
-- Intuitive navigation
+- Polished buttons and interactive elements
 
 ### ⚡ **Advanced Features**
 - High-precision molecular weight calculation
@@ -125,11 +129,12 @@ PORT=8081
 4. Upload file (supports 50+ formats including fid, log, propcar)
 5. Add optional notes
 
-### Managing Projects
-1. Navigate to **"Projects"**
-2. Create new projects or edit existing ones
-3. View project statistics
-4. Organize compounds by research areas
+### Managing Folders
+1. Use the refined sidebar to navigate folder hierarchy
+2. Create new folders with the compact "+" button
+3. Drag compounds between folders for easy organization
+4. Each folder shows only direct compounds (no subfolder mixing)
+5. Smart badges display compound counts for each folder
 
 ### Molecular Weight Calculation
 - Enter molecular formula (e.g., `C6H6`)
@@ -142,9 +147,9 @@ PORT=8081
 ```
 py-compound-manager/
 ├── app/                    # Main application
-│   ├── models/            # Database models (Compound, Project, SpectralData)
+│   ├── models/            # Database models (Compound, Folder, SpectralData)
 │   ├── routes/            # URL routes and API endpoints
-│   ├── templates/         # HTML templates
+│   ├── templates/         # HTML templates (Finder-style interface)
 │   ├── static/           # CSS, JavaScript, images
 │   └── uploads/          # User uploaded files
 │       ├── data/         # Spectral data files
@@ -168,10 +173,11 @@ py-compound-manager/
 - `POST /add` - Add new compound
 - `POST /edit/<id>` - Edit compound
 
-### Projects
-- `GET /projects` - List all projects
-- `POST /add_project` - Add new project
-- `POST /edit_project/<id>` - Edit project
+### Folders
+- `GET /?folder_id=<id>` - View folder contents
+- `POST /add_folder` - Add new folder
+- `POST /edit_folder/<id>` - Edit folder
+- `POST /move_compound` - Move compound between folders
 
 ### Spectral Data
 - `POST /upload_data/<compound_id>` - Upload spectral data
@@ -249,6 +255,9 @@ pip install --upgrade -r requirements.txt
 - [x] Multi-format file support (50+ types)
 - [x] Auto-startup system (macOS)
 - [x] User feedback system
+- [x] Hierarchical folder system
+- [x] Refined Finder-style interface
+- [x] Enhanced search and local sorting
 - [ ] Advanced search and filtering
 - [ ] Data export to multiple formats
 - [ ] Integration with chemical databases
