@@ -88,23 +88,23 @@
     <!-- Main Content Area -->
     <div class="finder-main">
         <!-- Breadcrumb Navigation -->
-        {% if current_folder %}
-        <nav aria-label="breadcrumb" style="margin-left: 200px; padding-left: 16px;">
-            <ol class="breadcrumb">
+        <nav aria-label="breadcrumb" id="breadcrumb-nav" style="margin-left: 200px; padding-left: 16px; {% if not current_folder %}display: none;{% endif %}">
+            <ol class="breadcrumb" id="breadcrumb-list">
+                {% if current_folder %}
                 <li class="breadcrumb-item">
-                    <a href="{{ url_for('main.index') }}">Home</a>
+                    <a href="javascript:void(0)" onclick="navigateToFolder(null)">Home</a>
                 </li>
                 {% set path_parts = current_folder.get_path().split('/') %}
                 {% for part in path_parts %}
                     {% if loop.last %}
                     <li class="breadcrumb-item active" aria-current="page">{{ part }}</li>
                     {% else %}
-                    <li class="breadcrumb-item"><a href="#">{{ part }}</a></li>
+                    <li class="breadcrumb-item"><a href="javascript:void(0)" onclick="navigateToBreadcrumb('{{ part }}')">{{ part }}</a></li>
                     {% endif %}
                 {% endfor %}
+                {% endif %}
             </ol>
         </nav>
-        {% endif %}
         
         <!-- Refined Search & Controls Bar -->
         <div class="search-header">
@@ -1932,6 +1932,9 @@ function updateSidebarActiveState(folderId) {
 function updateMainContent(data) {
     const contentBody = document.querySelector('.content-body');
     
+    // パンくずリストを更新（新しいデータ形式を使用）
+    updateBreadcrumbWithData(data.breadcrumb_path);
+    
     if (data.subfolders.length === 0 && data.compounds.length === 0) {
         // 空状態の表示
         contentBody.innerHTML = generateEmptyStateHTML(data.current_folder);
@@ -1939,6 +1942,72 @@ function updateMainContent(data) {
         // フォルダとコンパウンドのカードを生成
         contentBody.innerHTML = generateContentHTML(data.subfolders, data.compounds);
     }
+}
+
+function updateBreadcrumb(currentFolder) {
+    const breadcrumbNav = document.getElementById('breadcrumb-nav');
+    const breadcrumbList = document.getElementById('breadcrumb-list');
+    
+    if (!currentFolder || !currentFolder.id) {
+        // ルートフォルダの場合はパンくずリストを非表示
+        breadcrumbNav.style.display = 'none';
+        return;
+    }
+    
+    // パンくずリストを表示
+    breadcrumbNav.style.display = 'block';
+    
+    // パンくずリストのHTMLを生成
+    let breadcrumbHTML = `
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0)" onclick="navigateToFolder(null)">Home</a>
+        </li>
+    `;
+    
+    breadcrumbHTML += `
+        <li class="breadcrumb-item active" aria-current="page">${currentFolder.name}</li>
+    `;
+    
+    breadcrumbList.innerHTML = breadcrumbHTML;
+}
+
+function updateBreadcrumbWithData(breadcrumbData) {
+    const breadcrumbNav = document.getElementById('breadcrumb-nav');
+    const breadcrumbList = document.getElementById('breadcrumb-list');
+    
+    if (!breadcrumbData || breadcrumbData.length === 0) {
+        // ルートフォルダの場合はパンくずリストを非表示
+        breadcrumbNav.style.display = 'none';
+        return;
+    }
+    
+    // パンくずリストを表示
+    breadcrumbNav.style.display = 'block';
+    
+    // パンくずリストのHTMLを生成
+    let breadcrumbHTML = `
+        <li class="breadcrumb-item">
+            <a href="javascript:void(0)" onclick="navigateToFolder(null)">Home</a>
+        </li>
+    `;
+    
+    breadcrumbData.forEach((folder, index) => {
+        if (index === breadcrumbData.length - 1) {
+            // 最後の要素（現在のフォルダ）
+            breadcrumbHTML += `
+                <li class="breadcrumb-item active" aria-current="page">${folder.name}</li>
+            `;
+        } else {
+            // 中間のパス要素
+            breadcrumbHTML += `
+                <li class="breadcrumb-item">
+                    <a href="javascript:void(0)" onclick="navigateToFolder(${folder.id})">${folder.name}</a>
+                </li>
+            `;
+        }
+    });
+    
+    breadcrumbList.innerHTML = breadcrumbHTML;
 }
 
 function generateEmptyStateHTML(currentFolder) {

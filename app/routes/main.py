@@ -149,12 +149,33 @@ def get_folder_content():
             'spectral_data_count': len(compound.spectral_data)
         })
     
+    # パンくずリスト用のパス情報を取得
+    breadcrumb_data = []
+    if current_folder:
+        # 現在のフォルダから親をたどってパスを構築
+        folder_chain = []
+        current = current_folder
+        while current:
+            folder_chain.append(current)
+            current = current.parent
+        
+        # 逆順にして正しいパス順序にする
+        folder_chain.reverse()
+        
+        # パンくずリスト用のデータを構築
+        for folder in folder_chain:
+            breadcrumb_data.append({
+                'id': folder.id,
+                'name': folder.name
+            })
+    
     return jsonify({
         'success': True,
         'current_folder': {
             'id': current_folder.id if current_folder else None,
             'name': current_folder.name if current_folder else None
         },
+        'breadcrumb_path': breadcrumb_data,
         'subfolders': subfolder_data,
         'compounds': compound_data
     })
