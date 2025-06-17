@@ -73,20 +73,13 @@ def get_all_descendant_compounds(folder_id):
 @main_bp.route('/')
 def index():
     folder_id = request.args.get('folder_id', type=int)
-    include_subfolders = request.args.get('include_subfolders', 'true') == 'true'
     
     if folder_id:
         current_folder = Folder.query.get(folder_id)
         # サブフォルダを取得
         subfolders = Folder.query.filter_by(parent_id=folder_id).order_by(Folder.name).all()
-        
-        if include_subfolders:
-            # 親フォルダには子フォルダの化合物も含める
-            compounds = get_all_descendant_compounds(folder_id)
-        else:
-            # 直接の化合物のみ
-            compounds = Compound.query.filter_by(folder_id=folder_id).all()
-        compounds = sorted(compounds, key=lambda x: x.updated_date, reverse=True)
+        # 直接の化合物のみ表示（サブフォルダ内化合物は含めない）
+        compounds = Compound.query.filter_by(folder_id=folder_id).order_by(Compound.updated_date.desc()).all()
     else:
         # ルートフォルダの場合は親がないフォルダを表示
         subfolders = Folder.query.filter_by(parent_id=None).order_by(Folder.name).all()
@@ -101,8 +94,7 @@ def index():
                          subfolders=subfolders,
                          folder_tree=folder_tree, 
                          current_folder=current_folder,
-                         unorganized_count=unorganized_count,
-                         include_subfolders=include_subfolders)
+                         unorganized_count=unorganized_count)
 
 @main_bp.route('/compound/<int:compound_id>')
 def compound_detail(compound_id):

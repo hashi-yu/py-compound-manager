@@ -780,3 +780,480 @@ h1, h2, h3, h4, h5, h6 {
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+/* =====================================
+   Refined Finder Sidebar Styles
+   ===================================== */
+
+/* Refined Sidebar Button Styles */
+.sidebar-add-btn {
+    background: rgba(0, 122, 255, 0.1);
+    border: 1px solid rgba(0, 122, 255, 0.2);
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: #007AFF;
+    font-size: 0;
+}
+
+.sidebar-add-btn:hover {
+    background: rgba(0, 122, 255, 0.15);
+    border-color: rgba(0, 122, 255, 0.3);
+    transform: scale(1.05);
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.2);
+}
+
+.sidebar-add-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
+}
+
+/* Refined Folder Toggle Button */
+.folder-toggle {
+    background: none;
+    border: none;
+    padding: 4px;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--gray-600);
+    border-radius: 4px;
+    transition: all 0.15s ease;
+    margin-right: 2px;
+}
+
+.folder-toggle:hover {
+    background: rgba(0, 122, 255, 0.1);
+    color: #007AFF;
+    transform: scale(1.1);
+}
+
+.folder-toggle:active {
+    transform: scale(0.9);
+}
+
+.folder-spacer {
+    width: 18px;
+    height: 18px;
+    margin-right: 2px;
+    flex-shrink: 0;
+}
+
+/* Refined Sidebar Items */
+.sidebar-item {
+    margin: 1px 6px;
+    padding: 8px 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    background: none;
+    border-radius: 8px;
+    text-align: left;
+    font-size: 13px;
+    position: relative;
+}
+
+.sidebar-item:hover {
+    background: rgba(0, 122, 255, 0.08);
+    transform: translateX(2px);
+}
+
+.sidebar-item.active {
+    background: linear-gradient(135deg, #007AFF, #5AC8FA);
+    color: white;
+    box-shadow: 0 2px 8px rgba(0, 122, 255, 0.3);
+    transform: translateX(2px);
+}
+
+.sidebar-item.active .sidebar-icon {
+    color: white;
+    opacity: 1;
+}
+
+.sidebar-item-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 20px;
+}
+
+.sidebar-icon {
+    flex-shrink: 0;
+    opacity: 0.7;
+    color: var(--gray-600);
+    transition: all 0.2s ease;
+}
+
+.sidebar-item:hover .sidebar-icon {
+    opacity: 1;
+    color: #007AFF;
+}
+
+.sidebar-item-text {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.2;
+}
+
+/* Refined Badge Styles */
+.badge {
+    font-size: 10px;
+    padding: 2px 6px;
+    font-weight: 600;
+    border-radius: 10px;
+    border: none;
+    min-width: 18px;
+    text-align: center;
+    line-height: 1.2;
+}
+
+.badge.bg-primary {
+    background: rgba(255, 255, 255, 0.2) !important;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.badge.bg-secondary {
+    background: rgba(0, 122, 255, 0.15) !important;
+    color: #007AFF;
+    border: 1px solid rgba(0, 122, 255, 0.2);
+}
+
+.sidebar-item:hover .badge.bg-secondary {
+    background: rgba(0, 122, 255, 0.2) !important;
+    border-color: rgba(0, 122, 255, 0.3);
+}
+
+/* Refined Sidebar Header */
+.sidebar-header {
+    padding: 14px 16px 12px 16px;
+    background: rgba(248, 248, 248, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    min-height: 50px;
+}
+
+.sidebar-title {
+    margin: 0;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--gray-700);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    line-height: 1;
+}
+
+/* Refined Toggle Icon Animation */
+.toggle-icon {
+    transition: transform 0.2s ease;
+    color: inherit;
+}
+
+.folder-toggle.expanded .toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* Folder Children Animation */
+.folder-children {
+    overflow: hidden;
+    transition: all 0.3s ease;
+    max-height: 1000px;
+}
+
+.folder-children.collapsed {
+    max-height: 0;
+    padding: 0;
+}
+
+/* Sidebar Content Refinements */
+.sidebar-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px 0 16px 0;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 122, 255, 0.2) transparent;
+}
+
+.sidebar-content::-webkit-scrollbar {
+    width: 6px;
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 122, 255, 0.2);
+    border-radius: 3px;
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 122, 255, 0.3);
+}
+
+/* =====================================
+   Refined Search & Controls Layout
+   ===================================== */
+
+/* Search Header Improvements */
+.search-header {
+    padding: 16px 20px;
+    background: linear-gradient(to bottom, #fafafa, #f5f5f5);
+    border-bottom: 1px solid #e0e0e0;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+}
+
+.search-container {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+/* Search Input Group */
+.search-input-group {
+    position: relative;
+    flex: 1;
+    min-width: 300px;
+    max-width: 450px;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 44px 12px 40px;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 14px;
+    background: #ffffff;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: #007AFF;
+    box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.1);
+    background: #fafafa;
+}
+
+.search-icon {
+    position: absolute;
+    left: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #8e8e93;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.search-clear {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #8e8e93;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 3;
+}
+
+.search-clear:hover {
+    background: #666;
+    transform: translateY(-50%) scale(1.1);
+}
+
+/* Controls Group */
+.controls-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.sort-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 8px 12px;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+}
+
+.control-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666;
+    margin: 0;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.modern-select {
+    background: transparent;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 13px;
+    color: #333;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 140px;
+    font-weight: 500;
+}
+
+.modern-select:focus {
+    outline: none;
+    background: rgba(0, 122, 255, 0.1);
+    color: #007AFF;
+}
+
+.modern-select:hover {
+    background: rgba(0, 122, 255, 0.05);
+}
+
+/* Sort Order Button */
+.sort-order-btn {
+    background: rgba(0, 122, 255, 0.1);
+    border: 1px solid rgba(0, 122, 255, 0.2);
+    border-radius: 6px;
+    padding: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: #007AFF;
+}
+
+.sort-order-btn:hover {
+    background: rgba(0, 122, 255, 0.15);
+    border-color: rgba(0, 122, 255, 0.3);
+    transform: scale(1.05);
+}
+
+.sort-order-btn[data-order="asc"] svg {
+    transform: rotate(180deg);
+}
+
+/* Content Actions Refinement */
+.content-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-left: auto;
+}
+
+.primary-btn {
+    background: linear-gradient(135deg, #007AFF, #5AC8FA);
+    border: none;
+    border-radius: 12px;
+    padding: 12px 20px;
+    font-size: 14px;
+    color: white;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 122, 255, 0.3);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.primary-btn:hover {
+    background: linear-gradient(135deg, #0056CC, #4AA3E8);
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 122, 255, 0.4);
+}
+
+.primary-btn:active {
+    transform: translateY(0);
+}
+
+/* Content Header Improvements */
+.content-header {
+    padding: 20px 24px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.content-header .d-flex {
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .search-container {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        min-width: unset;
+        max-width: unset;
+    }
+    
+    .controls-group {
+        justify-content: center;
+    }
+    
+    .sort-controls {
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: stretch;
+    }
+    
+    .content-actions {
+        justify-content: center;
+        margin-left: 0;
+    }
+}

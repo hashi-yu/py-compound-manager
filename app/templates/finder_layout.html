@@ -6,29 +6,29 @@
     <div class="finder-sidebar">
         <div class="sidebar-header">
             <h6 class="sidebar-title">
-                <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="me-2">
+                <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="me-2">
                     <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
                 </svg>
                 Folders
             </h6>
-            <button class="btn btn-sm btn-outline-primary" onclick="showNewFolderModal()" style="padding: 4px 6px;">
-                <svg width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+            <button class="sidebar-add-btn" onclick="showNewFolderModal()" title="Create new folder">
+                <svg width="11" height="11" fill="currentColor" viewBox="0 0 16 16">
                     <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
                 </svg>
             </button>
         </div>
         
         <div class="sidebar-content">
-            <!-- Uncategorized Compounds -->
+            <!-- All Compounds -->
             <div class="sidebar-item {% if not current_folder %}active{% endif %}" 
                  onclick="navigateToFolder(null)"
                  ondrop="handleDrop(event, null)" 
                  ondragover="handleDragOver(event)">
                 <div class="sidebar-item-content">
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
+                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
                         <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 14.5 0h-13z"/>
                     </svg>
-                    <span class="sidebar-item-text">Uncategorized</span>
+                    <span class="sidebar-item-text">All Compounds</span>
                     {% if unorganized_count > 0 %}
                     <span class="badge bg-secondary">{{ unorganized_count }}</span>
                     {% endif %}
@@ -47,7 +47,7 @@
                         <div class="sidebar-item-content">
                             {% if item.children %}
                             <button class="folder-toggle" onclick="toggleFolder(event, {{ item.folder.id }})">
-                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="toggle-icon">
+                                <svg width="8" height="8" fill="currentColor" viewBox="0 0 16 16" class="toggle-icon">
                                     <path d="M6.776 1.553a.5.5 0 0 1 .671.223l3 6a.5.5 0 0 1 0 .448l-3 6a.5.5 0 1 1-.894-.448L9.44 8 6.553 2.224a.5.5 0 0 1 .223-.671z"/>
                                 </svg>
                             </button>
@@ -55,7 +55,7 @@
                             <span class="folder-spacer"></span>
                             {% endif %}
                             
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" class="sidebar-icon">
                                 <path d="M.54 3.87.5 3a2 2 0 0 1 2-2h3.672a2 2 0 0 1 1.414.586l.828.828A2 2 0 0 0 9.828 3h4.672a2 2 0 0 1 2 2l-.54.87a1 1 0 0 1-.94.63H1.48a1 1 0 0 1-.94-.63zM2.5 4a.5.5 0 0 0-.5.5v8a.5.5 0 0 0 .5.5h11a.5.5 0 0 0 .5-.5v-8a.5.5 0 0 0-.5-.5h-11z"/>
                             </svg>
                             <span class="sidebar-item-text">{{ item.folder.name }}</span>
@@ -100,31 +100,38 @@
         </nav>
         {% endif %}
         
-        <!-- Search Bar -->
+        <!-- Refined Search & Controls Bar -->
         <div class="search-header">
             <div class="search-container">
+                <!-- Search Input Group -->
                 <div class="search-input-group">
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" class="search-icon">
                         <path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/>
                     </svg>
-                    <input type="text" class="search-input" id="globalSearch" placeholder="Search by compound name, formula, notes...">
+                    <input type="text" class="search-input" id="globalSearch" placeholder="Search compounds, formulas, notes...">
                     <button class="search-clear" id="clearSearch" style="display: none;">
                         <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M2.146 2.854a.5.5 0 1 1 .708-.708L8 7.293l5.146-5.147a.5.5 0 0 1 .708.708L8.707 8l5.147 5.146a.5.5 0 0 1-.708.708L8 8.707l-5.146 5.147a.5.5 0 0 1-.708-.708L7.293 8 2.146 2.854Z"/>
                         </svg>
                     </button>
                 </div>
-                <div class="sort-controls">
-                    <select class="modern-select" id="sortBy">
-                        <option value="updated_date">Recently Updated</option>
-                        <option value="name">Name</option>
-                        <option value="molecular_weight">Molecular Weight</option>
-                        <option value="created_date">Recently Created</option>
-                    </select>
-                    <select class="modern-select" id="sortOrder">
-                        <option value="desc">↓</option>
-                        <option value="asc">↑</option>
-                    </select>
+                
+                <!-- Sort & Filter Controls -->
+                <div class="controls-group">
+                    <div class="sort-controls">
+                        <label class="control-label">Sort by:</label>
+                        <select class="modern-select" id="sortBy">
+                            <option value="updated_date">Recently Updated</option>
+                            <option value="name">Name A-Z</option>
+                            <option value="molecular_weight">Molecular Weight</option>
+                            <option value="created_date">Recently Created</option>
+                        </select>
+                        <button class="sort-order-btn" id="sortOrderBtn" data-order="desc" title="Sort direction">
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                <path d="M8 1a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L7.5 13.293V1.5A.5.5 0 0 1 8 1z"/>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -135,7 +142,7 @@
                         <label for="filterFolder" class="form-label">Folder</label>
                         <select class="form-select form-select-sm" id="filterFolder">
                             <option value="">All Folders</option>
-                            <option value="unorganized">Uncategorized</option>
+                            <option value="unorganized">All Compounds</option>
                             {% macro render_folder_filter_options(folders, level=0) %}
                                 {% for item in folders %}
                                     <option value="{{ item.folder.id }}">
@@ -177,7 +184,7 @@
                         {% if current_folder %}
                             {{ current_folder.name }}
                         {% else %}
-                            Uncategorized Compounds
+                            All Compounds
                         {% endif %}
                     </h4>
                     <p class="content-subtitle" id="compoundCount">
@@ -187,53 +194,8 @@
                             No compounds found
                         {% endif %}
                     </p>
-                    {% if current_folder %}
-                    <div class="subfolder-toggle">
-                        <div class="form-check form-switch">
-                            <input class="form-check-input" type="checkbox" id="includeSubfolders" 
-                                   {% if include_subfolders %}checked{% endif %}
-                                   onchange="toggleSubfolderView()">
-                            <label class="form-check-label" for="includeSubfolders">
-                                Include compounds from subfolders
-                            </label>
-                        </div>
-                    </div>
-                    {% endif %}
                 </div>
                 <div class="content-actions">
-                    <button class="action-btn" id="selectAllToggle">
-                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M2.5 8a5.5 5.5 0 0 1 11 0 .5.5 0 0 0 1 0 6.5 6.5 0 1 0-13 0 .5.5 0 0 0 1 0z"/>
-                            <path d="M7.394 6.813a.5.5 0 1 0-.788.624l2.5 3.126a.5.5 0 0 0 .79-.004l5-6.25a.5.5 0 1 0-.792-.634L9.5 9.367 7.394 6.813z"/>
-                        </svg>
-                        Select All
-                    </button>
-                    
-                    <div class="bulk-actions-container" id="bulkActions" style="display: none;">
-                        <div class="bulk-actions-bar">
-                            <span class="bulk-count" id="bulkCount">3 selected</span>
-                            <div class="bulk-buttons">
-                                <button class="bulk-btn bulk-btn-move" id="bulkMove" title="Move selected items">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M2.5 4a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zM2.5 8a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5zm0 4a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1H3a.5.5 0 0 1-.5-.5z"/>
-                                        <path d="m12.354 8.354-.707-.707L13.793 6H10.5a.5.5 0 0 1 0-1h3.293l-2.146-2.146.707-.708L15.207 5.5l-2.853 2.854z"/>
-                                    </svg>
-                                </button>
-                                <button class="bulk-btn bulk-btn-export" id="bulkExport" title="Export selected items">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
-                                        <path d="M7.646 1.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1-.708.708L8.5 2.707V11.5a.5.5 0 0 1-1 0V2.707L5.354 4.854a.5.5 0 1 1-.708-.708l3-3z"/>
-                                    </svg>
-                                </button>
-                                <button class="bulk-btn bulk-btn-delete" id="bulkDelete" title="Delete selected items">
-                                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-                                        <path d="M6.5 1h3a.5.5 0 0 1 .5.5v1H6v-1a.5.5 0 0 1 .5-.5ZM11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3A1.5 1.5 0 0 0 5 1.5v1H2.506a.58.58 0 0 0-.01 0H1.5a.5.5 0 0 0 0 1h.538l.853 10.66A2 2 0 0 0 4.885 16h6.23a2 2 0 0 0 1.994-1.84l.853-10.66h.538a.5.5 0 0 0 0-1h-.995a.59.59 0 0 0-.01 0H11Z"/>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
                     <a href="{{ url_for('main.add_compound') }}" class="primary-btn">
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
@@ -1731,18 +1693,6 @@ function navigateToFolder(folderId) {
     }
 }
 
-function toggleSubfolderView() {
-    const checkbox = document.getElementById('includeSubfolders');
-    const currentParams = new URLSearchParams(window.location.search);
-    
-    if (checkbox.checked) {
-        currentParams.set('include_subfolders', 'true');
-    } else {
-        currentParams.set('include_subfolders', 'false');
-    }
-    
-    window.location.href = window.location.pathname + '?' + currentParams.toString();
-}
 
 function toggleFolder(event, folderId) {
     event.stopPropagation();
@@ -1909,9 +1859,19 @@ function initializeSearch() {
         performSearch();
     });
     
-    // ソート変更
-    sortBy.addEventListener('change', performSearch);
-    sortOrder.addEventListener('change', performSearch);
+    // ソート変更 - フォルダ内のみでソート
+    sortBy.addEventListener('change', performLocalSort);
+    
+    // ソート順序ボタン
+    const sortOrderBtn = document.getElementById('sortOrderBtn');
+    if (sortOrderBtn) {
+        sortOrderBtn.addEventListener('click', function() {
+            const currentOrder = this.getAttribute('data-order');
+            const newOrder = currentOrder === 'desc' ? 'asc' : 'desc';
+            this.setAttribute('data-order', newOrder);
+            performLocalSort();
+        });
+    }
     
     // フィルタ切り替え
     toggleFilters.addEventListener('click', function() {
@@ -2070,6 +2030,95 @@ function updateCompoundGrid(compounds) {
     contentBody.innerHTML = gridHtml;
 }
 
+// フォルダ内でのローカルソート機能
+function performLocalSort() {
+    const sortBy = document.getElementById('sortBy');
+    const sortOrderBtn = document.getElementById('sortOrderBtn');
+    
+    if (!sortBy || !sortOrderBtn) return;
+    
+    const sortField = sortBy.value;
+    const sortOrder = sortOrderBtn.getAttribute('data-order');
+    
+    // 現在表示されている化合物カードを取得
+    const compoundCards = Array.from(document.querySelectorAll('.compound-card'));
+    const folderCards = Array.from(document.querySelectorAll('.folder-card'));
+    
+    if (compoundCards.length === 0) return;
+    
+    // 化合物データを抽出してソート
+    const compoundData = compoundCards.map(card => {
+        const nameElement = card.querySelector('.card-title');
+        const cardTexts = Array.from(card.querySelectorAll('.card-text'));
+        
+        // 分子量を含むテキストを探す
+        let molecularWeight = 0;
+        const weightText = cardTexts.find(text => text.textContent.includes('MW:'));
+        if (weightText) {
+            const match = weightText.textContent.match(/MW:\s*([\d.]+)/);
+            molecularWeight = match ? parseFloat(match[1]) : 0;
+        }
+        
+        return {
+            element: card.parentElement, // .col-* or .custom-card-item wrapper
+            name: nameElement ? nameElement.textContent.trim() : '',
+            molecular_weight: molecularWeight,
+            updated_date: new Date().getTime() // 現在時刻をデフォルトに
+        };
+    });
+    
+    // ソート実行
+    compoundData.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch (sortField) {
+            case 'name':
+                valueA = a.name.toLowerCase();
+                valueB = b.name.toLowerCase();
+                break;
+            case 'molecular_weight':
+                valueA = a.molecular_weight;
+                valueB = b.molecular_weight;
+                break;
+            case 'created_date':
+            case 'updated_date':
+                valueA = a.updated_date;
+                valueB = b.updated_date;
+                break;
+            default:
+                return 0;
+        }
+        
+        let comparison = 0;
+        if (valueA < valueB) comparison = -1;
+        else if (valueA > valueB) comparison = 1;
+        
+        return sortOrder === 'desc' ? -comparison : comparison;
+    });
+    
+    // DOMを再配置
+    const gridContainer = document.querySelector('.row.g-4') || document.querySelector('.custom-card-grid');
+    if (!gridContainer) return;
+    
+    // フォルダカードを保持
+    const folderElements = folderCards.map(card => card.parentElement);
+    
+    // コンテナをクリア
+    gridContainer.innerHTML = '';
+    
+    // フォルダカードを最初に追加
+    folderElements.forEach(element => {
+        gridContainer.appendChild(element);
+    });
+    
+    // ソートされた化合物カードを追加
+    compoundData.forEach(item => {
+        gridContainer.appendChild(item.element);
+    });
+    
+    console.log(`Sorted ${compoundData.length} compounds by ${sortField} (${sortOrder})`);
+}
+
 // 化合物数の更新
 function updateCompoundCount(count) {
     const countElement = document.getElementById('compoundCount');
@@ -2189,7 +2238,7 @@ function showBulkMoveModal() {
                         <div class="mb-3">
                             <label for="bulkMoveFolder" class="form-label">Destination Folder</label>
                             <select class="form-select" id="bulkMoveFolder">
-                                <option value="">Uncategorized</option>
+                                <option value="">All Compounds</option>
                                 ${renderFolderOptions()}
                             </select>
                         </div>

@@ -91,14 +91,7 @@
                 <!-- フォルダ表示 -->
                 {% if compound.folder %}
                 <p class="project-name">
-                    {% if current_folder and include_subfolders and compound.folder.id != current_folder.id %}
-                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16" class="me-1 text-muted">
-                        <path d="M1.5 0A1.5 1.5 0 0 0 0 1.5v13A1.5 1.5 0 0 0 1.5 16h13a1.5 1.5 0 0 0 1.5-1.5v-13A1.5 1.5 0 0 0 14.5 0h-13z"/>
-                    </svg>
-                    <span class="text-muted">{{ compound.folder.get_path() }}</span>
-                    {% else %}
                     {{ compound.folder.name }}
-                    {% endif %}
                 </p>
                 {% endif %}
                 
